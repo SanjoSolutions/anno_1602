@@ -10,6 +10,18 @@ class StructureWithReadBytes(Structure):
         memmove(addressof(self), bytes, min(sizeof(self), len(bytes)))
 
 
+class Player(StructureWithReadBytes):
+    _fields_ = [
+        ('gold', c_uint32)
+    ]
+
+    SIZE = 0x4
+
+
+def read_player(process, player_address):
+    return read_entity(process, Player, player_address)
+
+
 class Supply(Structure):
     _fields_ = [
         ('amount', c_short),
@@ -114,6 +126,12 @@ def read_referred_entity(entity, field_name):
 
 
 process = Pymem('1602.exe')
+
+player_address = 0x005B7684
+player = read_player(process, player_address)
+print('Player gold:', player.gold)
+
+print('')
 
 city_address = 0x005DC440
 city = read_city(process, city_address)
