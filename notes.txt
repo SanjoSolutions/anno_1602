@@ -1,0 +1,17 @@
+5DC57C
+A0A2CC
+
+distance: C
+
+distance food, tools: 0x60
+distance food, tools (inventory): 8
+8 * 0xC = 0x60 ? (true)
+
+tools position: 20
+tools offset: 0x42
+20 * 0xC = 0x42 ? (false)
+20 * 0xC = 0x180
+
+food offset: 0x2A
+tools offset: 0x42
+wood offset: 0x45

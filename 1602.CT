@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="34">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>0</ID>
+      <Description>"tools1"</Description>
+      <LastState Value="480" RealAddress="005DC572"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+1DC572</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>1</ID>
+      <Description>"tools2"</Description>
+      <LastState Value="1376256" RealAddress="00A0A280"/>
+      <VariableType>4 Bytes</VariableType>
+      <Address>00A0A280</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>2</ID>
+      <Description>"wood1"</Description>
+      <LastState Value="768" RealAddress="005DC57E"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+1DC57E</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3</ID>
+      <Description>"wood2"</Description>
+      <LastState Value="2228224" RealAddress="00A0A2CC"/>
+      <VariableType>4 Bytes</VariableType>
+      <Address>00A0A2CC</Address>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols/>
+  <Comments>Info about this table:
+</Comments>
+  <LuaScript>getApplication().Title = "A"
+getMainForm().setCaption("A")
+
+</LuaScript>
+</CheatTable>
