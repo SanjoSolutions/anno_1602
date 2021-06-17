@@ -31,20 +31,12 @@ class City(StructureWithReadBytes):
 
 
 def read_cities(process):
-    cities = []
     city_address = 0x005DC440
-    while process.read_bool(city_address):
-        city = read_city(process, city_address)
-        cities.append(city)
-        city_address += CITY_STRUCTURE_SIZE
-    return cities
+    return read_entities(process, City, CITY_STRUCTURE_SIZE, city_address)
 
 
 def read_city(process, city_address):
-    city_bytes = process.read_bytes(city_address, CITY_STRUCTURE_SIZE)
-    city = City()
-    city.read_bytes(city_bytes)
-    return city
+    return read_entity(process, City, CITY_STRUCTURE_SIZE, city_address)
 
 
 SHIP_STRUCTURE_SIZE = 0x218
@@ -57,21 +49,28 @@ class Ship(StructureWithReadBytes):
 
 
 def read_ships(process):
-    ships = []
     ship_address = 0x004CF4E2
-    while process.read_bool(ship_address):
-        ship = read_ship(process, ship_address)
-        ships.append(ship)
-        ship_address += SHIP_STRUCTURE_SIZE
-    return ships
+    return read_entities(process, Ship, SHIP_STRUCTURE_SIZE, ship_address)
 
 
 def read_ship(process, ship_address):
-    ship_bytes = process.read_bytes(ship_address, SHIP_STRUCTURE_SIZE)
-    ship = Ship()
-    ship.read_bytes(ship_bytes)
-    return ship
+    return read_entity(process, Ship, SHIP_STRUCTURE_SIZE, ship_address)
 
+
+def read_entities(process, entity_class, structure_size, address):
+    entities = []
+    while process.read_bool(address):
+        entity = read_entity(process, entity_class, structure_size, address)
+        entities.append(entity)
+        address += structure_size
+    return entities
+
+
+def read_entity(process, entity_class, structure_size, address):
+    bytes = process.read_bytes(address, structure_size)
+    entity = entity_class()
+    entity.read_bytes(bytes)
+    return entity
 
 
 process = Pymem('1602.exe')
