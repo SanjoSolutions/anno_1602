@@ -12,10 +12,16 @@ class StructureWithReadBytes(Structure):
 
 class Player(StructureWithReadBytes):
     _fields_ = [
-        ('gold', c_uint32)
+        ('gold', c_uint32),
+        ('name', c_char * 0x60)
     ]
 
-    SIZE = 0x4
+    SIZE = 0x280
+
+
+def read_players(process):
+    player_address = 0x005B7684
+    return read_entities(process, Player, player_address)
 
 
 def read_player(process, player_address):
@@ -33,14 +39,16 @@ class City(StructureWithReadBytes):
     _fields_ = [
         ('name', c_char * 0x2A),
         ('_spacer_', c_byte * 0x18),
-        ('supplies', Supply * NUMBER_OF_SUPPLY_TYPES)
+        ('supplies', Supply * NUMBER_OF_SUPPLY_TYPES),
+        ('_spacer_2_', c_byte * 0xCA),
+        ('number_of_pioneers', c_uint32)  # 0x220
     ]
 
     SIZE = 0x258
 
 
 def read_cities(process):
-    city_address = 0x005DC440
+    city_address = 0x005DBAE0
     return read_entities(process, City, city_address)
 
 
@@ -60,9 +68,10 @@ class ShipCoordinates(StructureWithReadBytes):
 
 class Ship(StructureWithReadBytes):
     _fields_ = [
-        ('coordinates_pointer', c_uint32),  # pointer to structure of type: ShipCoordinates
+        ('coordinates_pointer', c_uint32),
         ('_spacer_', c_byte * 0x182),
-        ('name', c_char * 128)
+        ('name', c_char * 0x18),
+        ('cannon_count', c_byte)
     ]
 
     SIZE = 0x218
@@ -127,15 +136,17 @@ def read_referred_entity(entity, field_name):
 
 process = Pymem('1602.exe')
 
-player_address = 0x005B7684
-player = read_player(process, player_address)
-print('Player gold:', player.gold)
+players = read_players(process)
+print('Players:')
+for player in players:
+    print(player.name.decode('utf-8') + ': ' + str(player.gold))
 
 print('')
 
 city_address = 0x005DC440
 city = read_city(process, city_address)
 print('City:', city.name.decode('utf-8'))
+print('Number of pioneers:', city.number_of_pioneers)
 print('Supplies:')
 for supply in city.supplies:
     print(supply.amount)
@@ -146,9 +157,9 @@ print('')
 
 cities = read_cities(process)
 print('Number of cities:', len(cities))
-print('City names:')
+print('Cities:')
 for city in cities:
-    print(city.name.decode('utf-8'))
+    print(city.name.decode('utf-8') + ' (' + str(city.number_of_pioneers) + ' pioneers)')
 
 
 print('')
@@ -158,4 +169,4 @@ ships = read_ships(process)
 print('Number of ships:', len(ships))
 print('Ships:')
 for ship in ships:
-    print(ship.name.decode('utf-8'), ship.coordinates.x, ship.coordinates.y)
+    print(ship.name.decode('utf-8'), ship.coordinates.x, ship.coordinates.y, ship.cannon_count)
