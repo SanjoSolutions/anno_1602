@@ -28,6 +28,25 @@ def read_player(process, player_address):
     return read_entity(process, Player, player_address)
 
 
+class Island(StructureWithReadBytes):
+    _fields_ = [
+        ('_spacer_', c_byte * 12),  # 0x0
+        ('width', c_uint32),  # 0xC
+        ('height', c_uint32),  # 0x10
+    ]
+
+    SIZE = 0xB00
+
+
+def read_islands(process):
+    island_address = 0x005E6B20
+    return read_entities(process, Island, island_address)
+
+
+def read_island(process, island_address):
+    return read_entity(process, Island, island_address)
+
+
 class Supply(Structure):
     _fields_ = [
         ('amount', c_short),
@@ -37,11 +56,12 @@ class Supply(Structure):
 
 class City(StructureWithReadBytes):
     _fields_ = [
-        ('name', c_char * 0x2A),
+        ('name', c_char * 0x2A),  # 0x0
         ('_spacer_', c_byte * 0x18),
         ('supplies', Supply * NUMBER_OF_SUPPLY_TYPES),
         ('_spacer_2_', c_byte * 0xCA),
-        ('number_of_pioneers', c_uint32)  # 0x220
+        ('number_of_pioneers', c_uint32),  # 0x220
+        ('stop_supplying_materials_to_the_settlers', c_bool)  # 0x257
     ]
 
     SIZE = 0x258
@@ -89,7 +109,7 @@ def read_ship(process, ship_address):
 
 def read_entities(process, entity_class, address):
     entities = []
-    while process.read_bool(address):
+    while process.read_ulonglong(address) > 0:
         entity = read_entity(process, entity_class, address)
         entities.append(entity)
         address += entity_class.SIZE
@@ -151,6 +171,15 @@ print('Supplies:')
 for supply in city.supplies:
     print(supply.amount)
 
+
+print('')
+
+
+islands = read_islands(process)
+print('Number of islands:', len(islands))
+print('Islands:')
+for island in islands:
+    print('Width: ' + str(island.width) + ', height: ' + str(island.height))
 
 print('')
 
