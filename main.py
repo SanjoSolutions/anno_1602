@@ -47,6 +47,33 @@ def read_city(process, city_address):
     return city
 
 
+SHIP_STRUCTURE_SIZE = 0x218
+
+
+class Ship(StructureWithReadBytes):
+    _fields_ = [
+        ('name', c_char * 128)
+    ]
+
+
+def read_ships(process):
+    ships = []
+    ship_address = 0x004CF4E2
+    while process.read_bool(ship_address):
+        ship = read_ship(process, ship_address)
+        ships.append(ship)
+        ship_address += SHIP_STRUCTURE_SIZE
+    return ships
+
+
+def read_ship(process, ship_address):
+    ship_bytes = process.read_bytes(ship_address, SHIP_STRUCTURE_SIZE)
+    ship = Ship()
+    ship.read_bytes(ship_bytes)
+    return ship
+
+
+
 process = Pymem('1602.exe')
 
 city_address = 0x005DC440
@@ -62,3 +89,10 @@ print('Number of cities:', len(cities))
 print('City names:')
 for city in cities:
     print(city.name.decode('utf-8'))
+
+
+ships = read_ships(process)
+print('Number of ships:', len(ships))
+print('Ship names:')
+for ship in ships:
+    print(ship.name.decode('utf-8'))
