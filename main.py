@@ -83,11 +83,17 @@ for supply in city.supplies:
     print(supply.amount)
 
 
+print('')
+
+
 cities = read_cities(process)
 print('Number of cities:', len(cities))
 print('City names:')
 for city in cities:
     print(city.name.decode('utf-8'))
+
+
+print('')
 
 
 ships = read_ships(process)
