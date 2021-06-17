@@ -1,16 +1,64 @@
 from pymem import Pymem
+from ctypes import *
 
 NUMBER_OF_SUPPLY_TYPES = 23
 
 
-def read_city_supplies(process: Pymem, base_address):
-    supply = [0] * NUMBER_OF_SUPPLY_TYPES
-    for index in range(NUMBER_OF_SUPPLY_TYPES):
-        offset = 0x6 + index * 0x3
-        supply[index] = process.read_short(base_address + offset * 4 + 0x2A)
-    return supply
+class StructureWithReadBytes(Structure):
+    def read_bytes(self, bytes):
+        memmove(addressof(self), bytes, min(sizeof(self), len(bytes)))
+
+
+class Supply(Structure):
+    _fields_ = [
+        ('amount', c_short),
+        ('_spacer_', c_byte * 10)
+    ]
+
+
+# city structure size: 0x258
+#   city name offset: 0x0
+
+CITY_STRUCTURE_SIZE = 0x258
+
+
+class City(StructureWithReadBytes):
+    _fields_ = [
+        ('name', c_char * 0x2A),
+        ('_spacer_', c_byte * 0x18),
+        ('supplies', Supply * NUMBER_OF_SUPPLY_TYPES)
+    ]
+
+
+def read_cities(process):
+    cities = []
+    city_address = 0x005DC440
+    while process.read_bool(city_address):
+        city = read_city(process, city_address)
+        cities.append(city)
+        city_address += CITY_STRUCTURE_SIZE
+    return cities
+
+
+def read_city(process, city_address):
+    city_bytes = process.read_bytes(city_address, CITY_STRUCTURE_SIZE)
+    city = City()
+    city.read_bytes(city_bytes)
+    return city
 
 
 process = Pymem('1602.exe')
-supplies = read_city_supplies(process, 0x005DC440)
-print(supplies)
+
+city_address = 0x005DC440
+city = read_city(process, city_address)
+print('City:', city.name.decode('utf-8'))
+print('Supplies:')
+for supply in city.supplies:
+    print(supply.amount)
+
+
+cities = read_cities(process)
+print('Number of cities:', len(cities))
+print('City names:')
+for city in cities:
+    print(city.name.decode('utf-8'))
