@@ -1,11 +1,17 @@
+import os
+import pickle
+import sys
 from enum import IntEnum
 
+from mss import mss
 from pymem import Pymem
 
 from a import A
 from ctypes import *
 import pyautogui
 import time
+import cv2 as cv
+import numpy as np
 
 
 class Rect(Structure):
@@ -17,14 +23,14 @@ class Rect(Structure):
     ]
 
 
-class MouseAction(IntEnum):
-    Move = 0
-    PrimaryClickAt = 1
-    SecondaryClick = 2
+class ActionType(IntEnum):
+    PrimaryMouseClickAt = 1
+    KeyPress = 2
 
 
 class Environment:
     def __init__(self):
+        self.screenshotter = mss()
         self.process = Pymem('1602.exe')
         self.hwnd = cdll.user32.FindWindowW(None, 'Anno 1602')
         rect = Rect()
@@ -49,23 +55,18 @@ class Environment:
         while windll.user32.GetForegroundWindow() != self.hwnd:
             time.sleep(1)
         type = action[0]
-        if type == MouseAction.Move:
-            position = action[1]
-            x, y = self.action_position_to_mouse_position(position)
-            pyautogui.moveTo(
-                x=x,
-                y=y,
-                duration=0.1
-            )
-        elif type == MouseAction.PrimaryClickAt:
+        if type == ActionType.PrimaryMouseClickAt:
             position = action[1]
             x, y = self.action_position_to_mouse_position(position)
             pyautogui.click(
                 x=x,
                 y=y
             )
-        elif type == MouseAction.SecondaryClick:
-            pyautogui.click(button='right')
+        elif type == ActionType.KeyPress:
+            keys = action[1]
+            if isinstance(keys, str):
+                keys = (keys,)
+            pyautogui.hotkey(*keys)
         else:
             raise ValueError('Unexpected action type: ' + str(type))
 
@@ -85,39 +86,83 @@ class Environment:
 
     def get_available_actions(self):
         return (
-            self.generate_mouse_move_actions() |
             self.generate_primary_mouse_click_at_actions() |
-            self.generate_secondary_mouse_click_actions()
+            self.generate_key_press_actions()
         )
-
-    def generate_mouse_move_actions(self):
-        actions = set()
-        for y in range(self.window['height']):
-            for x in range(self.window['width']):
-                action = (MouseAction.Move, (x, y))
-                actions.add(action)
-        return actions
 
     def generate_primary_mouse_click_at_actions(self):
         actions = set()
-        for y in range(self.window['height']):
-            for x in range(self.window['width']):
-                action = (MouseAction.PrimaryClickAt, (x, y))
+        for y in range(0, self.window['height'], 10):
+            for x in range(0, self.window['width'], 10):
+                action = (ActionType.PrimaryMouseClickAt, (x, y))
                 actions.add(action)
         return actions
 
-    def generate_secondary_mouse_click_actions(self):
-        actions = set()
-        action = (MouseAction.SecondaryClick,)
-        actions.add(action)
+    def generate_key_press_actions(self):
+        # see manual, Appendix D (page 69)
+        actions = {
+            (ActionType.KeyPress, 'f2'),
+            (ActionType.KeyPress, 'f3'),
+            (ActionType.KeyPress, 'f4'),
+            (ActionType.KeyPress, 'f5'),
+            (ActionType.KeyPress, 'f6'),
+            (ActionType.KeyPress, 'f7'),
+            (ActionType.KeyPress, 'z'),
+            (ActionType.KeyPress, 'x'),
+            (ActionType.KeyPress, 'o'),
+            (ActionType.KeyPress, 'd'),
+            (ActionType.KeyPress, 'l'),
+            (ActionType.KeyPress, 'b'),
+            (ActionType.KeyPress, 'k'),
+            (ActionType.KeyPress, 'i'),
+            (ActionType.KeyPress, 'f'),
+            (ActionType.KeyPress, 'w'),
+            (ActionType.KeyPress, 'j'),
+            (ActionType.KeyPress, 'h'),
+            (ActionType.KeyPress, 'pause'),
+            (ActionType.KeyPress, 'esc'),
+            (ActionType.KeyPress, 's'),
+            (ActionType.KeyPress, 'c'),
+            (ActionType.KeyPress, ('ctrl', '1')),
+            (ActionType.KeyPress, ('ctrl', '2')),
+            (ActionType.KeyPress, ('ctrl', '3')),
+            (ActionType.KeyPress, ('ctrl', '4')),
+            (ActionType.KeyPress, ('ctrl', '5')),
+            (ActionType.KeyPress, ('ctrl', '6')),
+            (ActionType.KeyPress, ('ctrl', '7')),
+            (ActionType.KeyPress, ('ctrl', '8')),
+            (ActionType.KeyPress, ('ctrl', '9')),
+            (ActionType.KeyPress, '1'),
+            (ActionType.KeyPress, '2'),
+            (ActionType.KeyPress, '3'),
+            (ActionType.KeyPress, '4'),
+            (ActionType.KeyPress, '5'),
+            (ActionType.KeyPress, '6'),
+            (ActionType.KeyPress, '7'),
+            (ActionType.KeyPress, '8'),
+            (ActionType.KeyPress, '9'),
+            (ActionType.KeyPress, 'f8'),
+            (ActionType.KeyPress, 'f9'),
+            (ActionType.KeyPress, 'f10'),
+            (ActionType.KeyPress, 'f11'),
+            (ActionType.KeyPress, 'f12'),
+        }
         return actions
 
     def get_state(self):
-        start_address = 0x400000
-        end_address = 0x72e000
-        length = end_address - start_address
-        bytes = self.process.read_bytes(start_address, length)
-        return bytes
+        screenshot = self.screenshotter.grab(self.window)
+        pixels = np.array(screenshot.pixels, dtype=np.float32)
+        pixels = cv.cvtColor(pixels, cv.COLOR_RGB2GRAY)
+        pixels = cv.resize(pixels, (80, 60))
+        pixels /= 255.0
+        pixels = tuple(map(tuple, pixels))
+
+        gold = self.process.read_int(0x005B7684)
+        values = (gold,)
+
+        state = pixels + (values,)
+
+        return state
 
 
 class Database:
@@ -207,20 +252,33 @@ class Database:
         )
 
 
-state_to_metric_value = dict()
-
-
 def determine_metric_value(state):
-    return state_to_metric_value[state]
+    return state[-1][0]
 
 
-environment = Environment()
-environment.get_state()
-database = Database()
-a = A()
-a.explore(environment, database, 1000)
-print('explored states: ' + str(len(database.state_to_explored_actions)))
+def save_database(database):
+    with open('database.pickle', 'wb') as file:
+        pickle.dump(database, file, pickle.HIGHEST_PROTOCOL)
 
-# environment.reset()
-# path_to_outcome = a.evaluate(environment, database, determine_metric_value)
-# print(path_to_outcome)
+
+if __name__ == '__main__':
+    environment = Environment()
+    environment.get_state()
+    database = Database()
+    a = A()
+    try:
+        a.explore(environment, database, 10000)
+        print('explored states: ' + str(len(database.state_to_explored_actions)))
+
+        # environment.reset()
+        path_to_outcome = a.evaluate(environment, database, determine_metric_value)
+        print(path_to_outcome)
+    except KeyboardInterrupt:
+        print('Interrupted')
+
+        save_database(database)
+
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
