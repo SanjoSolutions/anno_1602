@@ -256,19 +256,28 @@ def determine_metric_value(state):
     return state[-1][0]
 
 
+database_path = 'D:/anno_1602/database.pickle'
+
+
 def save_database(database):
-    with open('database.pickle', 'wb') as file:
+    with open(database_path, 'wb') as file:
         pickle.dump(database, file, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == '__main__':
+    if os.path.isfile(database_path):
+        with open(database_path, 'rb') as file:
+            database = pickle.load(file)
+    else:
+        database = Database()
     environment = Environment()
     environment.get_state()
-    database = Database()
     a = A()
     try:
         a.explore(environment, database, 10000)
         print('explored states: ' + str(len(database.state_to_explored_actions)))
+
+        save_database(database)
 
         # environment.reset()
         path_to_outcome = a.evaluate(environment, database, determine_metric_value)
