@@ -26,6 +26,7 @@ class Rect(Structure):
 class ActionType(IntEnum):
     PrimaryMouseClickAt = 1
     KeyPress = 2
+    Idle = 3
 
 
 class Environment:
@@ -67,6 +68,8 @@ class Environment:
             if isinstance(keys, str):
                 keys = (keys,)
             pyautogui.hotkey(*keys)
+        elif type == ActionType.Idle:
+            pass
         else:
             raise ValueError('Unexpected action type: ' + str(type))
 
@@ -87,7 +90,8 @@ class Environment:
     def get_available_actions(self):
         return (
             self.generate_primary_mouse_click_at_actions() |
-            self.generate_key_press_actions()
+            self.generate_key_press_actions() |
+            {(ActionType.Idle,)}
         )
 
     def generate_primary_mouse_click_at_actions(self):
