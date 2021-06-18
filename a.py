@@ -1,7 +1,8 @@
 from enum import IntEnum
 
+from pymem import Pymem
+
 from a import A
-from mss import mss
 from ctypes import *
 import pyautogui
 import time
@@ -24,7 +25,7 @@ class MouseAction(IntEnum):
 
 class Environment:
     def __init__(self):
-        self.screenshotter = mss()
+        self.process = Pymem('1602.exe')
         self.hwnd = cdll.user32.FindWindowW(None, 'Anno 1602')
         rect = Rect()
         succeeded = cdll.user32.GetWindowRect(self.hwnd, pointer(rect))
@@ -112,9 +113,11 @@ class Environment:
         return actions
 
     def get_state(self):
-        screenshot = self.screenshotter.grab(self.window)
-        pixels = tuple(screenshot.pixels)
-        return pixels
+        start_address = 0x400000
+        end_address = 0x72e000
+        length = end_address - start_address
+        bytes = self.process.read_bytes(start_address, length)
+        return bytes
 
 
 class Database:
