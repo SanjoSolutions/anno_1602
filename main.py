@@ -30,7 +30,9 @@ def read_player(process, player_address):
 
 class Island(StructureWithReadBytes):
     _fields_ = [
-        ('_spacer_', c_byte * 12),  # 0x0
+        ('_spacer_', c_byte * 4),  # 0x0
+        ('x', c_uint32),  # 0x4
+        ('y', c_uint32),  # 0x8
         ('width', c_uint32),  # 0xC
         ('height', c_uint32),  # 0x10
     ]
@@ -179,7 +181,7 @@ islands = read_islands(process)
 print('Number of islands:', len(islands))
 print('Islands:')
 for island in islands:
-    print('Width: ' + str(island.width) + ', height: ' + str(island.height))
+    print('x: ' + str(island.x) + ', y: ' + str(island.y) + ', width: ' + str(island.width) + ', height: ' + str(island.height))
 
 print('')
 
