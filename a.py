@@ -1,17 +1,30 @@
-import os
-import pickle
-import sys
+import random
 from enum import IntEnum
 
 from mss import mss
 from pymem import Pymem
 
-from a import A
 from ctypes import *
 import pyautogui
 import time
 import cv2 as cv
 import numpy as np
+
+from tensorflow.keras.layers import Dense, concatenate, Conv2D, Flatten
+from tensorflow.keras.models import Model
+from tensorflow.keras import Input
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import MeanSquaredError
+import tensorflow as tf
+import os
+
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+
+FRAME_WIDTH = 160
+FRAME_HEIGHT = 120
+NUMBER_OF_COLOR_CHANNELS = 1
 
 
 class Rect(Structure):
@@ -46,6 +59,7 @@ class Environment:
             'width': rect.right - rect.left - padding_left - padding_right,
             'height': rect.bottom - rect.top - title_bar_height - padding_bottom,
         }
+        self.actions = None
 
     def do_action(self, action):
         if self.is_done():
@@ -88,16 +102,142 @@ class Environment:
         return False
 
     def get_available_actions(self):
-        return (
-            self.generate_primary_mouse_click_at_actions() |
-            self.generate_key_press_actions() |
-            {(ActionType.Idle,)}
+        if self.actions is None:
+            self.actions = (
+                self.generate_3d_space_primary_mouse_click_at_actions() |
+                self.generate_minimap_primary_mouse_click_at_actions() |
+                self.generate_menu_actions() |
+                self.generate_submenu_actions() |
+                self.generate_key_press_actions() |
+                {(ActionType.Idle,)}
+            )
+        return self.actions
+
+    def generate_3d_space_primary_mouse_click_at_actions(self):
+        return self.generate_primary_mouse_click_at_actions(
+            (0, 0, 120, 115),
+            (4, 4)
         )
 
-    def generate_primary_mouse_click_at_actions(self):
+    def generate_minimap_primary_mouse_click_at_actions(self):
+        return self.generate_primary_mouse_click_at_actions(
+            (125, 3, 30, 25),
+            (1, 1)
+        )
+
+    def generate_menu_actions(self):
+        return {
+            (ActionType.PrimaryMouseClickAt, (127, 48)),  # build
+            # (ActionType.PrimaryMouseClickAt, (136, 48)),  # battle
+            (ActionType.PrimaryMouseClickAt, (144, 48)),  # status
+        }
+
+    def generate_submenu_actions(self):
+        return (
+            self.generation_status_menu_actions() |
+            self.generate_build_menu_actions() |
+            self.generate_ship_actions()
+        )
+
+    def generation_status_menu_actions(self):
+        return {
+            (ActionType.PrimaryMouseClickAt, (152, 111)),  # diplomacy
+        }
+
+    def generate_build_menu_actions(self):
+        build_menu_positions = [
+            (127, 103),  # 1
+            (136, 103),  # 2
+            (144, 103),  # 3
+            (153, 103),  # 4
+            (127, 113),  # 5
+            (136, 113),  # 6
+            (144, 113),  # 7
+            (153, 113),  # 8
+        ]
+
+        build_menu_actions = set(
+            [
+                (ActionType.PrimaryMouseClickAt, position)
+                for position
+                in build_menu_positions
+            ]
+        )
+
+        build_submenu_actions = set().union(
+            *[
+                self.generate_build_submenu_actions(position)
+                for position
+                in build_menu_positions
+            ]
+        )
+
+        return (
+            build_menu_actions |
+            build_submenu_actions
+        )
+
+    def generate_build_submenu_actions(self, build_menu_item_position):
+        BUILD_MENU_ITEM_WIDTH = 8
+        BUILD_MENU_ITEM_HEIGHT = 10
+        BUILD_SUBMENU_BETWEEN_ROW_SPACE = 2
+        BUILD_SUBMENU_BETWEEN_COLUMN_SPACE = 1
+        BUILD_SUBMENU_ITEM_WIDTH = 8
+        BUILD_SUBMENU_ITEM_HEIGHT = 7
+
+        build_menu_item_x, build_menu_item_y = build_menu_item_position
+
+        NUMBER_OF_ROWS = 4
+        NUMBER_OF_COLUMNS = 4
+
+        ROW_DELTA = BUILD_SUBMENU_BETWEEN_ROW_SPACE + BUILD_SUBMENU_ITEM_HEIGHT
+        COLUMN_DELTA = BUILD_SUBMENU_BETWEEN_COLUMN_SPACE + BUILD_SUBMENU_ITEM_WIDTH
+
         actions = set()
-        for y in range(0, self.window['height'], 10):
-            for x in range(0, self.window['width'], 10):
+
+        for row in range(0, NUMBER_OF_ROWS, 1):
+            y = build_menu_item_y - 0.5 * BUILD_MENU_ITEM_HEIGHT - BUILD_SUBMENU_BETWEEN_ROW_SPACE - 0.5 * BUILD_SUBMENU_ITEM_HEIGHT - \
+                (NUMBER_OF_ROWS - 1) * ROW_DELTA + \
+                row * ROW_DELTA
+            for column in range(0, NUMBER_OF_COLUMNS, 1):
+                x = 121 + BUILD_SUBMENU_BETWEEN_COLUMN_SPACE + 0.5 * BUILD_SUBMENU_ITEM_WIDTH + \
+                    column * COLUMN_DELTA
+                action = (ActionType.PrimaryMouseClickAt, (x, y))
+                actions.add(action)
+
+        return actions
+
+    def generate_ship_actions(self):
+        return self.generate_ship_status_actions()
+
+    def generate_ship_status_actions(self):
+        return {
+            (ActionType.PrimaryMouseClickAt, (127, 75)),  # explore island
+            (ActionType.PrimaryMouseClickAt, (130, 94)),  # build warehouse / exchange goods with warehouse
+            (ActionType.PrimaryMouseClickAt, (128, 104)),
+            (ActionType.PrimaryMouseClickAt, (136, 104)),
+            (ActionType.PrimaryMouseClickAt, (144, 104)),
+            (ActionType.PrimaryMouseClickAt, (152, 104)),
+            (ActionType.PrimaryMouseClickAt, (128, 86)),
+            (ActionType.PrimaryMouseClickAt, (133, 86)),
+            (ActionType.PrimaryMouseClickAt, (137, 86)),
+            (ActionType.PrimaryMouseClickAt, (141, 86)),
+            (ActionType.PrimaryMouseClickAt, (146, 86)),
+            (ActionType.PrimaryMouseClickAt, (153, 86)),
+            (ActionType.PrimaryMouseClickAt, (127, 77)),
+            (ActionType.PrimaryMouseClickAt, (136, 77)),
+            (ActionType.PrimaryMouseClickAt, (144, 77)),
+            (ActionType.PrimaryMouseClickAt, (153, 77)),
+            (ActionType.PrimaryMouseClickAt, (128, 69)),
+            (ActionType.PrimaryMouseClickAt, (136, 69)),
+            (ActionType.PrimaryMouseClickAt, (144, 69)),
+            (ActionType.PrimaryMouseClickAt, (153, 69)),
+        }
+
+    def generate_primary_mouse_click_at_actions(self, area, delta):
+        actions = set()
+        for y in range(area[1], area[1] + area[3], delta[1]):
+            for x in range(area[0], area[0] + area[2], delta[0]):
                 action = (ActionType.PrimaryMouseClickAt, (x, y))
                 actions.add(action)
         return actions
@@ -105,51 +245,51 @@ class Environment:
     def generate_key_press_actions(self):
         # see manual, Appendix D (page 69)
         actions = {
-            (ActionType.KeyPress, 'f2'),
-            (ActionType.KeyPress, 'f3'),
-            (ActionType.KeyPress, 'f4'),
+            # (ActionType.KeyPress, 'f2'),
+            # (ActionType.KeyPress, 'f3'),
+            # (ActionType.KeyPress, 'f4'),
             (ActionType.KeyPress, 'f5'),
             (ActionType.KeyPress, 'f6'),
             (ActionType.KeyPress, 'f7'),
-            (ActionType.KeyPress, 'z'),
-            (ActionType.KeyPress, 'x'),
-            (ActionType.KeyPress, 'o'),
+            # (ActionType.KeyPress, 'z'),
+            # (ActionType.KeyPress, 'x'),
+            # (ActionType.KeyPress, 'o'),
             (ActionType.KeyPress, 'd'),
-            (ActionType.KeyPress, 'l'),
+            # (ActionType.KeyPress, 'l'),
             (ActionType.KeyPress, 'b'),
-            (ActionType.KeyPress, 'k'),
+            # (ActionType.KeyPress, 'k'),  # can be uncommented at some point
             (ActionType.KeyPress, 'i'),
-            (ActionType.KeyPress, 'f'),
-            (ActionType.KeyPress, 'w'),
+            # (ActionType.KeyPress, 'f'),
+            # (ActionType.KeyPress, 'w'),  # can be uncommented at some point
             (ActionType.KeyPress, 'j'),
             (ActionType.KeyPress, 'h'),
-            (ActionType.KeyPress, 'pause'),
-            (ActionType.KeyPress, 'esc'),
-            (ActionType.KeyPress, 's'),
-            (ActionType.KeyPress, 'c'),
-            (ActionType.KeyPress, ('ctrl', '1')),
-            (ActionType.KeyPress, ('ctrl', '2')),
-            (ActionType.KeyPress, ('ctrl', '3')),
-            (ActionType.KeyPress, ('ctrl', '4')),
-            (ActionType.KeyPress, ('ctrl', '5')),
-            (ActionType.KeyPress, ('ctrl', '6')),
-            (ActionType.KeyPress, ('ctrl', '7')),
-            (ActionType.KeyPress, ('ctrl', '8')),
-            (ActionType.KeyPress, ('ctrl', '9')),
-            (ActionType.KeyPress, '1'),
-            (ActionType.KeyPress, '2'),
-            (ActionType.KeyPress, '3'),
-            (ActionType.KeyPress, '4'),
-            (ActionType.KeyPress, '5'),
-            (ActionType.KeyPress, '6'),
-            (ActionType.KeyPress, '7'),
-            (ActionType.KeyPress, '8'),
-            (ActionType.KeyPress, '9'),
-            (ActionType.KeyPress, 'f8'),
-            (ActionType.KeyPress, 'f9'),
-            (ActionType.KeyPress, 'f10'),
-            (ActionType.KeyPress, 'f11'),
-            (ActionType.KeyPress, 'f12'),
+            # (ActionType.KeyPress, 'pause'),
+            # (ActionType.KeyPress, 'esc'),
+            # (ActionType.KeyPress, 's'),  # can be uncommented at some point
+            # (ActionType.KeyPress, 'c'),  # can be uncommented at some point
+            # (ActionType.KeyPress, ('ctrl', '1')),
+            # (ActionType.KeyPress, ('ctrl', '2')),
+            # (ActionType.KeyPress, ('ctrl', '3')),
+            # (ActionType.KeyPress, ('ctrl', '4')),
+            # (ActionType.KeyPress, ('ctrl', '5')),
+            # (ActionType.KeyPress, ('ctrl', '6')),
+            # (ActionType.KeyPress, ('ctrl', '7')),
+            # (ActionType.KeyPress, ('ctrl', '8')),
+            # (ActionType.KeyPress, ('ctrl', '9')),
+            # (ActionType.KeyPress, '1'),
+            # (ActionType.KeyPress, '2'),
+            # (ActionType.KeyPress, '3'),
+            # (ActionType.KeyPress, '4'),
+            # (ActionType.KeyPress, '5'),
+            # (ActionType.KeyPress, '6'),
+            # (ActionType.KeyPress, '7'),
+            # (ActionType.KeyPress, '8'),
+            # (ActionType.KeyPress, '9'),
+            # (ActionType.KeyPress, 'f8'),
+            # (ActionType.KeyPress, 'f9'),
+            # (ActionType.KeyPress, 'f10'),
+            # (ActionType.KeyPress, 'f11'),
+            # (ActionType.KeyPress, 'f12'),
         }
         return actions
 
@@ -157,141 +297,158 @@ class Environment:
         screenshot = self.screenshotter.grab(self.window)
         pixels = np.array(screenshot.pixels, dtype=np.float32)
         pixels = cv.cvtColor(pixels, cv.COLOR_RGB2GRAY)
-        pixels = cv.resize(pixels, (80, 60))
+        pixels = cv.resize(pixels, (FRAME_WIDTH, FRAME_HEIGHT))
         pixels /= 255.0
         pixels = tuple(map(tuple, pixels))
 
-        gold = self.process.read_int(0x005B7684)
-        values = (gold,)
-
-        state = pixels + (values,)
+        state = pixels
 
         return state
 
+    def get_score(self):
+        modules = list(self.process.list_modules())
+        module = next(module for module in modules if module.name == 'Dll.dll')
+        module_base_address = module.lpBaseOfDll
+        score_address = module_base_address + 0x1C2D4
+        return self.process.read_int(score_address)
 
-class Database:
-    def __init__(self):
-        self.state_to_explored_actions = dict()
-        self.state_and_action_to_state = dict()
-        self.state_to_state_and_action_pairs_that_lead_to_it = dict()
-        self.state_to_unexplored_actions_count = dict()
 
-    def store(self, state_before_action, action, state_after_action):
-        state_before_action = tuple(state_before_action)
-        state_after_action = tuple(state_after_action)
-        if state_before_action not in self.state_to_explored_actions:
-            self.state_to_explored_actions[state_before_action] = set()
-        self.state_to_explored_actions[state_before_action].add(action)
+def main():
+    environment = Environment()
 
-        self.state_and_action_to_state[(state_before_action, action)] = \
-            state_after_action
+    convolutional_model = create_convolutional_model(FRAME_WIDTH, FRAME_HEIGHT)
+    state_to_action_value_models, state_to_action_values_model = create_state_to_action_value_models(
+        environment,
+        FRAME_WIDTH,
+        FRAME_HEIGHT,
+        convolutional_model
+    )
 
-        if state_after_action not in self.state_to_state_and_action_pairs_that_lead_to_it:
-            self.state_to_state_and_action_pairs_that_lead_to_it[state_after_action] = set()
-        self.state_to_state_and_action_pairs_that_lead_to_it[state_after_action].add(
-            (state_before_action, action)
+    actions = list(environment.get_available_actions())
+
+    print('Number of actions: ' + str(len(actions)))
+
+    previous_score = environment.get_score()
+
+    state = environment.get_state()
+
+    while True:
+        action = choose_action(environment, state_to_action_values_model, state)
+        environment.do_action(actions[action])
+        score = environment.get_score()
+        reward = score - previous_score
+        print(actions[action], score, previous_score, reward)
+        after_state = environment.get_state()
+        update_value_prediction_model(
+            state_to_action_value_models[action],
+            state_to_action_values_model,
+            state,
+            reward,
+            after_state
         )
+        previous_score = score
+        state = after_state
 
-    def query_explored_actions(self, state):
-        state = tuple(state)
-        return self.state_to_explored_actions[state] if state in self.state_to_explored_actions else set()
 
-    def query_action_that_lead_to_state_with_highest_metric_value(self, state, determine_metric_value):
-        state = tuple(state)
-        explored_actions = self.state_to_explored_actions[state]
-        return max(
-            determine_metric_value(self.state_and_action_to_state[(state, action)])
-            for action
-            in explored_actions
+def create_convolutional_model(frame_width, frame_height):
+    image_input_layer = Input(shape=(frame_height, frame_width, NUMBER_OF_COLOR_CHANNELS))
+    convolution_layer_1 = Conv2D(
+        filters=32,
+        kernel_size=(8, 8),
+        strides=4,
+        activation='relu',
+    )(image_input_layer)
+    convolution_layer_2 = Conv2D(
+        filters=64,
+        kernel_size=(4, 4),
+        strides=2,
+        activation='relu',
+    )(convolution_layer_1)
+    convolution_layer_3 = Conv2D(
+        filters=64,
+        kernel_size=(3, 3),
+        strides=1,
+        activation='relu',
+    )(convolution_layer_2)
+    return Model(inputs=image_input_layer, outputs=convolution_layer_3)
+
+
+def create_state_to_action_value_models(environment, frame_width, frame_height, convolutional_model):
+    number_of_actions = len(environment.get_available_actions())
+    image_input_layer = Input(shape=(frame_height, frame_width, NUMBER_OF_COLOR_CHANNELS))
+    convolutional_layers = convolutional_model(image_input_layer)
+    flatten_convolution_layers = Flatten()(convolutional_layers)
+    hidden_layer_1 = Dense(512, activation='relu')(flatten_convolution_layers)
+    hidden_layer_2 = Dense(512, activation='relu')(hidden_layer_1)
+    output_layers = [
+        Dense(1)(hidden_layer_2)
+        for index
+        in range(number_of_actions)
+    ]
+    state_to_action_value_prediction_models = [
+        Model(inputs=image_input_layer, outputs=output_layers[index])
+        for index
+        in range(number_of_actions)
+    ]
+    for model in state_to_action_value_prediction_models:
+        model.compile(
+            optimizer=Adam(learning_rate=0.001),
+            loss=MeanSquaredError()
         )
-
-    def query_state_with_highest_metric_value(self, determine_metric_value):
-        return max(self.state_and_action_to_state.values(), key=lambda state: determine_metric_value(state))
-
-    def query_state_and_action_pairs_which_lead_to_state(self, state):
-        state = tuple(state)
-        return (
-            self.state_to_state_and_action_pairs_that_lead_to_it[state]
-            if state in self.state_to_state_and_action_pairs_that_lead_to_it
-            else set()
-        )
-
-    def store_unexplored_actions_count(self, state, unexplored_actions_count):
-        state = tuple(state)
-        self.state_to_unexplored_actions_count[state] = unexplored_actions_count
-
-    def query_total_known_unexplored_actions_count(self, state):
-        visited_states = set()
-        state = tuple(state)
-        count = 0
-        states = [state]
-        while len(states) >= 1:
-            next_states = []
-            for state in states:
-                if state not in visited_states:
-                    unexplored_actions_count = self.query_unexplored_actions_count(state)
-                    if unexplored_actions_count is not None:
-                        count += unexplored_actions_count
-                    if state in self.state_to_explored_actions:
-                        actions = self.state_to_explored_actions[state]
-                        next_states += [self.state_and_action_to_state[(state, action)] for action in actions]
-                    visited_states.add(state)
-            states = next_states
-        return count
-
-    def query_unexplored_actions_count(self, state):
-        return (
-            self.state_to_unexplored_actions_count[state]
-            if state in self.state_to_unexplored_actions_count
-            else None
-        )
-
-    def query_state(self, state, action):
-        state = tuple(state)
-        state_and_action_pair = (state, action)
-        return (
-            self.state_and_action_to_state[state_and_action_pair]
-            if state_and_action_pair in self.state_and_action_to_state
-            else None
-        )
+    action_values_layer = concatenate(output_layers)
+    state_to_action_values_predication_model = Model(inputs=image_input_layer, outputs=action_values_layer)
+    state_to_action_values_predication_model.compile(
+        optimizer=Adam(learning_rate=0.001),
+        loss=MeanSquaredError()
+    )
+    return state_to_action_value_prediction_models, state_to_action_values_predication_model
 
 
-def determine_metric_value(state):
-    return state[-1][0]
+alpha = 0.9
+gamma = 0.9
+epsilon = 0.1
 
 
-database_path = 'D:/anno_1602/database.pickle'
+def choose_action(environment, state_to_action_values_model, state):
+    actions = environment.get_available_actions()
+    if random.random() <= epsilon:
+        return random.randrange(0, len(actions))
+    else:
+        return determine_action(state_to_action_values_model, state)
 
 
-def save_database(database):
-    with open(database_path, 'wb') as file:
-        pickle.dump(database, file, pickle.HIGHEST_PROTOCOL)
+def update_value_prediction_model(state_to_action_value_model, state_to_action_values_model, state, reward, after_state):
+    states = np.array([state])
+    current_prediction = state_to_action_value_model(states).numpy()[0][0]
+    target = current_prediction + \
+        alpha * \
+            (reward + \
+             gamma * determine_value_of_highest_value_action(state_to_action_values_model, after_state) - \
+             current_prediction)
+    y = np.array([target])
+    state_to_action_value_model.fit(
+        x=states,
+        y=y
+    )
+
+
+def determine_action(state_to_action_values_model, state):
+    action = int(tf.math.argmax(state_to_action_values_model(np.array([state]))[0]).numpy())
+    return action
+
+
+def determine_value_of_highest_value_action(state_to_action_values_model, state):
+    value = float(tf.math.reduce_max(state_to_action_values_model(np.array([state]))[0]).numpy())
+    return value
+
+
+def action_to_embedding(environment, action):
+    actions = environment.get_available_actions()
+    number_of_actions = len(actions)
+    embedding = [0] * number_of_actions
+    embedding[action] = 1
+    return tuple(embedding)
 
 
 if __name__ == '__main__':
-    if os.path.isfile(database_path):
-        with open(database_path, 'rb') as file:
-            database = pickle.load(file)
-    else:
-        database = Database()
-    environment = Environment()
-    environment.get_state()
-    a = A()
-    try:
-        a.explore(environment, database, 10000)
-        print('explored states: ' + str(len(database.state_to_explored_actions)))
-
-        save_database(database)
-
-        # environment.reset()
-        path_to_outcome = a.evaluate(environment, database, determine_metric_value)
-        print(path_to_outcome)
-    except KeyboardInterrupt:
-        print('Interrupted')
-
-        save_database(database)
-
-        try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
+    main()
