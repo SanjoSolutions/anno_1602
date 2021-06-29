@@ -126,11 +126,11 @@ class Environment:
         )
 
     def generate_menu_actions(self):
-        return {
-            (ActionType.PrimaryMouseClickAt, (127, 48)),  # build
+        return set([
+            # (ActionType.PrimaryMouseClickAt, (127, 48)),  # build  # already covered by hotkey
             # (ActionType.PrimaryMouseClickAt, (136, 48)),  # battle
-            (ActionType.PrimaryMouseClickAt, (144, 48)),  # status
-        }
+            # (ActionType.PrimaryMouseClickAt, (144, 48)),  # status  # already covered by hotkey
+        ])
 
     def generate_submenu_actions(self):
         return (
