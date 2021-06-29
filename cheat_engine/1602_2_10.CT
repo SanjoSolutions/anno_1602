@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="34">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>1</ID>
+      <Description>"selected building type?"</Description>
+      <LastState Value="0" RealAddress="005B1A68"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+1B1A68</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>2</ID>
+      <Description>"selected building type?"</Description>
+      <LastState Value="1" RealAddress="00633724"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+233724</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3</ID>
+      <Description>"selected building y coordinate?"</Description>
+      <LastState Value="65535" RealAddress="0049AF4C"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+9AF4C</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>35</ID>
+      <Description>"selected building x coordinate?"</Description>
+      <LastState Value="65535" RealAddress="0049AF50"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+9AF50</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>0</ID>
+      <Description>"mouse click position x coordinate?"</Description>
+      <LastState Value="3" RealAddress="0049E708"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+9E708</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>36</ID>
+      <Description>"mouse click position y coordinate?"</Description>
+      <LastState Value="36" RealAddress="0049E70C"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+9E70C</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>5</ID>
+      <Description>"selected building y?"</Description>
+      <LastState Value="255" RealAddress="005B7664"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+1B7664</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>6</ID>
+      <Description>"selected building x?"</Description>
+      <LastState Value="255" RealAddress="005B7668"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+1B7668</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>7</ID>
+      <Description>"selected building x?"</Description>
+      <LastState Value="255" RealAddress="006335F8"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+2335F8</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>8</ID>
+      <Description>"selected building y?"</Description>
+      <LastState Value="255" RealAddress="00633600"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+233600</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>37</ID>
+      <Description>"mouse click position y coordinate?"</Description>
+      <LastState Value="146" RealAddress="006C3048"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+2C3048</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>9</ID>
+      <Description>"mouse click position x coordinate?"</Description>
+      <LastState Value="213" RealAddress="006C3050"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+2C3050</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>38</ID>
+      <Description>"mouse position y coordinate?"</Description>
+      <LastState Value="162" RealAddress="006C3088"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+2C3088</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>39</ID>
+      <Description>"mouse position x coordinate?"</Description>
+      <LastState Value="207" RealAddress="006C308C"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+2C308C</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>40</ID>
+      <Description>"mouse left button down?"</Description>
+      <LastState Value="0" RealAddress="006C3090"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+2C3090</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>13</ID>
+      <Description>"building 1 id"</Description>
+      <LastState Value="280" RealAddress="005472AC"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+1472AC</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>28</ID>
+      <Description>"No description"</Description>
+      <LastState Value="279" RealAddress="00547A8A"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+147A8A</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>26</ID>
+      <Description>"building 2 id"</Description>
+      <LastState Value="274" RealAddress="00547A96"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+147A96</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>30</ID>
+      <Description>"No description"</Description>
+      <LastState Value="275" RealAddress="00547A98"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+147A98</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>23</ID>
+      <Description>"building 3 id"</Description>
+      <LastState Value="277" RealAddress="00547A9C"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+147A9C</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>33</ID>
+      <Description>"No description"</Description>
+      <LastState Value="283" RealAddress="005472A2"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+1472A2</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>34</ID>
+      <Description>"some base?"</Description>
+      <LastState Value="00609160" RealAddress="00619B60"/>
+      <ShowAsHex>1</ShowAsHex>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>00619b60</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>41</ID>
+      <Description>"1602.exe"</Description>
+      <LastState Value="00905A4D" RealAddress="00400000"/>
+      <ShowAsHex>1</ShowAsHex>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>1602.exe</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>43</ID>
+      <Description>"mouse position x (island relative coordinate)"</Description>
+      <LastState Value="207" RealAddress="0049F784"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>0049F784</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>44</ID>
+      <Description>"mouse position y (island relative coordinate)"</Description>
+      <LastState Value="162" RealAddress="0049F788"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>0049F788</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>45</ID>
+      <Description>"pointer to island last hovered over with mouse"</Description>
+      <LastState Value="005F1020" RealAddress="0049F790"/>
+      <ShowAsHex>1</ShowAsHex>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>0049F790</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>46</ID>
+      <Description>"No description"</Description>
+      <LastState Value="255" RealAddress="00552FE0"/>
+      <VariableType>2 Bytes</VariableType>
+      <Address>1602.exe+152FE0</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>47</ID>
+      <Description>"pointer to island buildings?"</Description>
+      <LastState Value="255" RealAddress="0054A3B8"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>1602.exe+14A3b8</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>48</ID>
+      <Description>"No description"</Description>
+      <LastState Value="1656841377" RealAddress="004818CE"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>4818CE</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>50</ID>
+      <Description>"No description"</Description>
+      <LastState RealAddress="004986C8"/>
+      <VariableType>String</VariableType>
+      <Length>3</Length>
+      <Unicode>0</Unicode>
+      <CodePage>0</CodePage>
+      <ZeroTerminate>1</ZeroTerminate>
+      <Address>1602.exe+986C8</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>51</ID>
+      <Description>"No description"</Description>
+      <LastState Value="0" RealAddress="005B770A"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>05b770a</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>52</ID>
+      <Description>"No description"</Description>
+      <LastState Value="35437" RealAddress="005B6040"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>005b6040</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>53</ID>
+      <Description>"No description"</Description>
+      <LastState Value="0" RealAddress="005B770E"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>005b770e</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>54</ID>
+      <Description>"No description"</Description>
+      <LastState Value="0" RealAddress="005B7714"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>005b7714</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>55</ID>
+      <Description>"No description"</Description>
+      <LastState Value="0" RealAddress="005B7712"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>005b7712</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>56</ID>
+      <Description>"No description"</Description>
+      <LastState Value="10000" RealAddress="005498EC"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>005498ec</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>57</ID>
+      <Description>"No description"</Description>
+      <LastState Value="0" RealAddress="005B7718"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>005b7718</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>58</ID>
+      <Description>"No description"</Description>
+      <LastState Value="0" RealAddress="005B7716"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>005b7716</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>59</ID>
+      <Description>"No description"</Description>
+      <LastState Value="33947648" RealAddress="005DBAF8"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>005dbaf8</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>60</ID>
+      <Description>"No description"</Description>
+      <LastState Value="0" RealAddress="005B76E8"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>005b76e8</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>61</ID>
+      <Description>"No description"</Description>
+      <LastState Value="1536" RealAddress="005DBAF9"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>005dbaf9</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>62</ID>
+      <Description>"No description"</Description>
+      <LastState Value="182255616" RealAddress="005E7618"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>005e7618</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>63</ID>
+      <Description>"No description"</Description>
+      <LastState Value="1980438395" RealAddress="0019F684"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>0019F684</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>64</ID>
+      <Description>"No description"</Description>
+      <LastState Value="1852768329" RealAddress="005B7688"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>005b7688</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>65</ID>
+      <Description>"No description"</Description>
+      <VariableType>String</VariableType>
+      <Length>7</Length>
+      <Unicode>0</Unicode>
+      <CodePage>0</CodePage>
+      <ZeroTerminate>1</ZeroTerminate>
+      <Address>00A00027</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>66</ID>
+      <Description>"score"</Description>
+      <LastState Value="996" RealAddress="50EDC2D4"/>
+      <VariableType>4 Bytes</VariableType>
+      <Address>Dll.dll+1C2D4</Address>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols/>
+</CheatTable>
