@@ -35,11 +35,39 @@ class Island(StructureWithReadBytes):
         ('y', c_uint32),  # 0x8
         ('width', c_uint32),  # 0xC
         ('height', c_uint32),  # 0x10
+        ('_spacer_2_', c_byte * 0xAE4),
+        ('pFields', c_uint32),  # 0xAF4
+        # 0xAFC
     ]
 
     SIZE = 0xB00
 
 
+# 005b3160
+# 00619b60 <-
+
+# offset = (*(island.0xAF4 + (island.width * y + x) * 4) & 0x1FFF) * 4
+
+# pBlockId = (short *)(0x00619b60 + offset)
+
+
+def read_island_fields(process, island):
+    block_ids = [None] * island.height
+    for y in range(island.height):
+        block_ids[y] = [0] * island.width
+    fields_base_address = island.pFields
+    for y in range(island.height):
+        for x in range(island.width):
+            index = island.width * y + x
+            address = fields_base_address + index * 4
+            offset = (process.read_uint(address) & 0x1FFF) * 4
+            block_pointer = process.read_uint(0x00619b60 + offset)
+            block_id = process.read_ushort(block_pointer)
+            block_ids[y][x] = block_id
+    return block_ids
+
+
+# FIXME: When previously more islands existed then it seems those islands are still kinda in memory.
 def read_islands(process):
     island_address = 0x005E6B20
     return read_entities(process, Island, island_address)
@@ -181,7 +209,11 @@ islands = read_islands(process)
 print('Number of islands:', len(islands))
 print('Islands:')
 for island in islands:
-    print('x: ' + str(island.x) + ', y: ' + str(island.y) + ', width: ' + str(island.width) + ', height: ' + str(island.height))
+    print('x: ' + str(island.x) + ', y: ' + str(island.y) + ', width: ' + str(island.width) + ', height: ' + str(island.height) + ', pSomething: ' + hex(island.pFields))
+    island_fields = read_island_fields(process, island)
+    print('island fields:')
+    for row in island_fields:
+        print(row)
 
 print('')
 

@@ -264,7 +264,7 @@ class Environment:
             (ActionType.KeyPress, 'j'),
             (ActionType.KeyPress, 'h'),
             # (ActionType.KeyPress, 'pause'),
-            # (ActionType.KeyPress, 'esc'),
+            (ActionType.KeyPress, 'esc'),
             # (ActionType.KeyPress, 's'),  # can be uncommented at some point
             # (ActionType.KeyPress, 'c'),  # can be uncommented at some point
             # (ActionType.KeyPress, ('ctrl', '1')),
@@ -330,11 +330,11 @@ def main():
 
     previous_score = environment.get_score()
 
-    state = environment.get_state()
-
     while True:
+        state = environment.get_state()
         action = choose_action(environment, state_to_action_values_model, state)
         environment.do_action(actions[action])
+        time.sleep(1)
         score = environment.get_score()
         reward = score - previous_score
         print(actions[action], score, previous_score, reward)
@@ -347,7 +347,6 @@ def main():
             after_state
         )
         previous_score = score
-        state = after_state
 
 
 def create_convolutional_model(frame_width, frame_height):
