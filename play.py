@@ -6,6 +6,7 @@ from pymem import Pymem
 import pyautogui
 import pywintypes
 from win32gui import FindWindow, GetClientRect, ClientToScreen, GetForegroundWindow
+from other.main import read_ships, ShipMovingStatus
 
 # Goal:
 # n aristocrates
@@ -329,6 +330,22 @@ def open_ship_menu():
     pyautogui.press('s')
 
 
+def open_status_menu():
+    pyautogui.press('i')
+
+
+def build_warehouse_from_ship(ship, position):
+    select_ship(ship)
+    go_to_map_position(position)
+    open_status_menu()
+    select_warehouse_from_ship()
+    click_at_map_position(position)
+
+
+def select_warehouse_from_ship():
+    click_at_client_area_position((840, 609))
+
+
 def select_building(building_name):
     select_build_menu()
     select_public_buildings()
@@ -395,13 +412,29 @@ def go_to_map_position(position):
     ))
 
 
+def when_ship_has_arrived(ship, fn):
+    while not has_ship_arrived(ship):
+        sleep(1)
+    fn()
+
+
+def has_ship_arrived(ship_index):
+    ships = read_ships(process)
+    ship = ships[ship_index]
+    return ship.moving_status == ShipMovingStatus.Standing
+
+
 def main():
     hwnd = FindWindow(None, 'Anno 1602')
     while GetForegroundWindow() != hwnd:
         sleep(1)
 
     # click_at_map_position_0()
-    move_ship(0, (286, 185))
+    ship = 0
+    ship_destination = (216, 165)
+    move_ship(ship, ship_destination)
+    warehouse_position = (213, 160)
+    when_ship_has_arrived(ship, lambda: build_warehouse_from_ship(ship, warehouse_position))
     exit()
 
     # -12, -6

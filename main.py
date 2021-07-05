@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 from pymem import Pymem
 from ctypes import *
 import re
@@ -118,14 +120,21 @@ class ShipCoordinates(StructureWithReadBytes):
 
 class Ship(StructureWithReadBytes):
     _fields_ = [
-        ('coordinates_pointer', c_uint32),
-        ('_spacer_', c_byte * 0x182),
-        ('name', c_char * 0x18),
-        ('cannon_count', c_byte)
+        ('coordinates_pointer', c_uint32),  # 0x0
+        ('_spacer_', c_byte * 0x14),  # 0x4
+        ('moving_status', c_ushort),  # 0x18
+        ('_spacer_2_', c_byte * 0x16C),  # 0x1A
+        ('name', c_char * 0x18),  # 0x186
+        ('cannon_count', c_byte)  # 0x19E
     ]
 
     SIZE = 0x218
     COORDINATES_TYPE = ShipCoordinates
+
+
+class ShipMovingStatus(IntEnum):
+    Standing = 0
+    Moving = 55
 
 
 def read_ships(process):
@@ -150,15 +159,15 @@ def read_entity(process, entity_class, address):
     bytes = process.read_bytes(address, entity_class.SIZE)
     entity = entity_class()
     entity.read_bytes(bytes)
-    read_referred_entities(entity)
+    read_referred_entities(process, entity)
 
     return entity
 
 
-def read_referred_entities(entity):
+def read_referred_entities(process, entity):
     pointer_field_names = get_pointer_field_names(entity.__class__)
     for field_name in pointer_field_names:
-        read_referred_entity(entity, field_name)
+        read_referred_entity(process, entity, field_name)
 
 
 def get_pointer_field_names(entity_class):
@@ -172,7 +181,7 @@ def get_pointer_field_names(entity_class):
     return field_names
 
 
-def read_referred_entity(entity, field_name):
+def read_referred_entity(process, entity, field_name):
     referred_entity_type_field = field_name.upper() + '_TYPE'
     referred_entity_type = getattr(entity.__class__, referred_entity_type_field)
     if not referred_entity_type:
@@ -184,52 +193,52 @@ def read_referred_entity(entity, field_name):
     setattr(entity, field_name, referred_entity)
 
 
-process = Pymem('1602.exe')
+def main():
+    process = Pymem('1602.exe')
 
-players = read_players(process)
-print('Players:')
-for player in players:
-    print(player.name.decode('utf-8') + ': ' + str(player.gold))
+    players = read_players(process)
+    print('Players:')
+    for player in players:
+        print(player.name.decode('utf-8') + ': ' + str(player.gold))
 
-print('')
+    print('')
 
-city_address = 0x005DC440
-city = read_city(process, city_address)
-print('City:', city.name.decode('utf-8'))
-print('Number of pioneers:', city.number_of_pioneers)
-print('Supplies:')
-for supply in city.supplies:
-    print(supply.amount)
+    city_address = 0x005DC440
+    city = read_city(process, city_address)
+    print('City:', city.name.decode('utf-8'))
+    print('Number of pioneers:', city.number_of_pioneers)
+    print('Supplies:')
+    for supply in city.supplies:
+        print(supply.amount)
+
+    print('')
+
+    islands = read_islands(process)
+    print('Number of islands:', len(islands))
+    print('Islands:')
+    for island in islands:
+        print('x: ' + str(island.x) + ', y: ' + str(island.y) + ', width: ' + str(island.width) + ', height: ' + str(island.height) + ', pSomething: ' + hex(island.pFields))
+        island_fields = read_island_fields(process, island)
+        print('island fields:')
+        for row in island_fields:
+            print(row)
+
+    print('')
+
+    cities = read_cities(process)
+    print('Number of cities:', len(cities))
+    print('Cities:')
+    for city in cities:
+        print(city.name.decode('utf-8') + ' (' + str(city.number_of_pioneers) + ' pioneers)')
+
+    print('')
+
+    ships = read_ships(process)
+    print('Number of ships:', len(ships))
+    print('Ships:')
+    for ship in ships:
+        print(ship.name.decode('utf-8'), ship.coordinates.x, ship.coordinates.y, ship.moving_status, ship.cannon_count)
 
 
-print('')
-
-
-islands = read_islands(process)
-print('Number of islands:', len(islands))
-print('Islands:')
-for island in islands:
-    print('x: ' + str(island.x) + ', y: ' + str(island.y) + ', width: ' + str(island.width) + ', height: ' + str(island.height) + ', pSomething: ' + hex(island.pFields))
-    island_fields = read_island_fields(process, island)
-    print('island fields:')
-    for row in island_fields:
-        print(row)
-
-print('')
-
-
-cities = read_cities(process)
-print('Number of cities:', len(cities))
-print('Cities:')
-for city in cities:
-    print(city.name.decode('utf-8') + ' (' + str(city.number_of_pioneers) + ' pioneers)')
-
-
-print('')
-
-
-ships = read_ships(process)
-print('Number of ships:', len(ships))
-print('Ships:')
-for ship in ships:
-    print(ship.name.decode('utf-8'), ship.coordinates.x, ship.coordinates.y, ship.cannon_count)
+if __name__ == '__main__':
+    main()
