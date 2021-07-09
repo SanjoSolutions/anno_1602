@@ -72,10 +72,11 @@ def parse(file_path):
         line_regexp = re.compile(r'^([^\t ]+)\s*([=:])\s*([^\t ][^\t]*)$')
         line = file.readline()
         while line:
-            print(line)
+            stripped_line = line.strip()
+            if stripped_line.startswith(';---'):
+                print(stripped_line)
             line = remove_comment(line)
             line = line.strip()
-            print('p: ' + line)
             if line == 'EndObj;':
                 if 'Nummer' in object or '@Nummer' in object:
                     object = objects.pop()
@@ -116,6 +117,9 @@ def parse(file_path):
                             if operand_a[0] == '@':
                                 at_attribute_values[operand_a] = value
 
+                            if operand_a in {'Nummer', '@Nummer'}:
+                                print(value)
+
             line = file.readline()
 
     return data
@@ -130,3 +134,7 @@ def remove_comment(line: str):
             return line[:index]
         except ValueError:
             return line
+
+
+if __name__ == '__main__':
+    parse('../haeuser.txt')

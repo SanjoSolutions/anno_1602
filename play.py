@@ -4,7 +4,6 @@ from time import sleep
 import numpy as np
 from pymem import Pymem
 import pyautogui
-import pywintypes
 from win32gui import FindWindow, GetClientRect, ClientToScreen, GetForegroundWindow
 
 from other.build_template import the_ultimate_city, PlacementType, Placement
@@ -17,6 +16,7 @@ from other.main import read_ships, ShipMovingStatus
 
 # TODO: taxes as yield of money.
 # TODO: production building operating cost / production building sleep operating cost as consumption of money.
+from other.rates import create_rates, good_names
 
 cycle = 60.0  # in seconds
 
@@ -29,47 +29,6 @@ population_groups = (
     'merchants',
     'aristocrats'
 )
-
-good_names = (
-    'money',
-    'iron ore',
-    'gold',
-    'wool',
-    'sugar',
-    'tobacco',
-    'cattle',
-    'grain',
-    'flour',
-    'iron',
-    'swords',
-    'muskets',
-    'cannon',
-    'food',
-    'tobacco products',
-    'spices',
-    'cocoa',
-    'liquor',
-    'cloth',
-    'clothes',
-    'jewelry',
-    'tools',
-    'wood',
-    'bricks'
-)
-
-
-# consumption or yield rates
-# positive number can be interpreted as yield
-# negative number can be interpreted as consumption
-def create_rates_vector():
-    return np.zeros((len(good_names)))
-
-
-def create_rates(rates):
-    consumption_rates_values = create_rates_vector()
-    for good_name, consumption_rate in rates.items():
-        consumption_rates_values[good_names.index(good_name)] = float(consumption_rate)
-    return np.array(consumption_rates_values)
 
 
 maximum_number_of_people_per_house = np.array((
