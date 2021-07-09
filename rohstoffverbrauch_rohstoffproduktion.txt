@@ -1,0 +1,113 @@
+Hypothese für Berechnung:
+
+Produktion pro Minute = 60 / (Rohmenge * Interval)
+
+
+
+Bei Rinderfarm:
+
+Rohmenge = 2
+Interval = 25
+Produktion pro Minute = 60 / (Rohmenge * Interval)
+Produktion pro Minute = 60 / (2 * 25)
+Produktion pro Minute =  60 / 50
+Produktion pro Minute =  1.2
+
+
+
+Produktion pro Minute = Arbeiter * (60 / (Rohmenge * Interval))
+
+
+Bei Rinderfarm:
+
+Arbeiter = 2
+Rohmenge = 2
+Interval = 25
+Produktion pro Minute = Arbeiter * (60 / (Rohmenge * Interval))
+Produktion pro Minute = 2 * (60 / (2 * 25))
+Produktion pro Minute =  2 * 1.2
+Produktion pro Minute =  2.4
+
+
+Bei Schaffarm:
+
+Produktion pro Minute = 60 / Interval
+
+Interval = 30
+Produktion pro Minute = 60 / Interval
+Produktion pro Minute = 60 / 30
+Produktion pro Minute = 2
+
+
+Bei Rinderfarm:
+
+Produktion pro Minute = 60 / Interval
+
+Interval = 25
+Produktion pro Minute = 60 / Interval
+Produktion pro Minute = 60 / 25
+Produktion pro Minute = 2.4
+
+
+Bei Fischerei:
+
+Produktion pro Minute = 60 / Interval
+
+Interval = 28
+Produktion pro Minute = 60 / 28
+Produktion pro Minute ~= 2.14 (seems false)
+
+
+Bei Fischerei:
+
+Produktion pro Minute = 60 / (Rohmenge * Interval)
+
+Rohmenge = 3
+Interval = 28
+Produktion pro Minute = 60 / (Rohmenge * Interval)
+Produktion pro Minute = 60 / (3 * 28)
+Produktion pro Minute ~= 0.71
+
+
+Worker Worktime
+
+
+Für Fischer und Getreidefarm:
+Formel A: Produktion pro Minute = 60 / (Rohmenge * Worker.Worktime + Interval)
+
+Für Rinderfarm:
+Formel B: Produktion pro Minute = 60 / Interval
+
+Unterschied:
+* Arbeiter sammelt Resource und verarbeitet Resource: Produktion pro Minute = 60 / (Rohmenge * Worker.Worktime + Interval)
+* Arbeiter verarbeitet Resource (Resource: Rind etc.): Produktion pro Minute = 60 / Interval
+
+
+Arbeiter sammelt Resource und verarbeitet Resource gilt für:
+* Hunting Lodge
+* Fisher's Hut / Fischerei
+* Grain Farm / Getreidefarm
+* Wind mill
+* Water mill
+* Butcher's shop
+* Bakery
+* Forester's hut
+* Stonemason
+* Ore smelter
+* Tool maker
+* Cotton plantation
+* Weaver's hut
+* Weaving mill
+* Tailor's shop
+* Sugar cane plantation
+* Winery
+* Distillery
+* Cocoa plantation
+* Tobacco plantation
+* Tobacco products
+* Spice plantation
+* Goldsmith
+
+Arbeiter verarbeitet Resource gilt für:
+* Cattle Farm / Rinderfarm
+* Sheep farm
