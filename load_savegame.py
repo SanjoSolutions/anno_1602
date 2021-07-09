@@ -31,9 +31,9 @@ def read_block(file):
         island_fields = island_fields_array()
         memmove(addressof(island_fields), data, island_fields_count * sizeof(IslandField))
         island_fields = list(island_fields)
-        buildings_set = set(island_field.building for island_field in island_fields)
+        buildings_set = set(island_field.type for island_field in island_fields)
         buildings = list(buildings_set)
-        house_island_fields = [island_field for island_field in island_fields if island_field.building == 605]
+        house_island_fields = [island_field for island_field in island_fields if island_field.type == 605]
         for house_island_field in house_island_fields:
             print('data_block_start', hex(data_block_start))
             print('house', house_island_field.x, house_island_field.y)

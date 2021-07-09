@@ -6,7 +6,10 @@ from pymem import Pymem
 import pyautogui
 import pywintypes
 from win32gui import FindWindow, GetClientRect, ClientToScreen, GetForegroundWindow
+
+from other.build_template import the_ultimate_city, PlacementType, Placement
 from other.main import read_ships, ShipMovingStatus
+
 
 # Goal:
 # n aristocrates
@@ -307,12 +310,24 @@ def select_build_menu():
     click_at_client_area_position((817, 308))
 
 
+def select_streets_and_bridges():
+    click_at_client_area_position((869, 667))
+
+
 def select_public_buildings():
     click_at_client_area_position((983, 724))
 
 
+def select_road():
+    click_at_client_area_position((806, 593))
+
+
 def select_house():
     click_at_client_area_position((805, 663))
+
+
+def select_fire_brigade():
+    click_at_client_area_position((978, 549))
 
 
 def move_ship(index, position):
@@ -346,19 +361,26 @@ def select_warehouse_from_ship():
     click_at_client_area_position((840, 609))
 
 
-def select_building(building_name):
+def select_building(placement):
     select_build_menu()
-    select_public_buildings()
-    if building_name == 'house':
+    type = placement.type
+    if type == PlacementType.Road:
+        select_streets_and_bridges()
+        select_road()
+    elif type == PlacementType.House:
+        select_public_buildings()
         select_house()
+    elif type == PlacementType.FireBrigade:
+        select_public_buildings()
+        select_fire_brigade()
     else:
-        raise ValueError('building "' + building_name + '" not supported.')
+        raise ValueError('placement "' + str(type) + '" not supported.')
 
 
-def place_building(building_name, position):
-    go_to_map_position(position)
-    select_building(building_name)
-    click_at_map_position(position)
+def place_building(placement):
+    go_to_map_position(placement.position)
+    select_building(placement)
+    click_at_map_position(placement.position)
 
 
 def click_at_map_position(position):
@@ -424,22 +446,31 @@ def has_ship_arrived(ship_index):
     return ship.moving_status == ShipMovingStatus.Standing
 
 
+def build(build_template, position):
+    for placement in build_template.placements:
+        x = position[0] + placement.position[0]
+        y = position[1] + placement.position[1]
+        placement_position = (x, y)
+        placement2 = Placement(placement.type, placement_position, placement.rotation)
+        place_building(placement2)
+
+
 def main():
     hwnd = FindWindow(None, 'Anno 1602')
     while GetForegroundWindow() != hwnd:
         sleep(1)
 
-    # click_at_map_position_0()
-    ship = 0
-    ship_destination = (216, 165)
-    move_ship(ship, ship_destination)
-    warehouse_position = (213, 160)
-    when_ship_has_arrived(ship, lambda: build_warehouse_from_ship(ship, warehouse_position))
+    # ship = 0
+    # ship_destination = (216, 165)
+    # move_ship(ship, ship_destination)
+    # warehouse_position = (213, 160)
+    # when_ship_has_arrived(ship, lambda: build_warehouse_from_ship(ship, warehouse_position))
+    build(the_ultimate_city, (217, 151))
     exit()
 
     # -12, -6
     # 4
-    place_building('house', (5 + 9, 5 + 6))
+    place_building(Placement(PlacementType.House, (5 + 9, 5 + 6)))
 
     while True:
         # TODO: Input from game
