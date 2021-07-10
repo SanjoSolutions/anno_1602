@@ -10,8 +10,11 @@ class BuildTemplate:
 
 class PlacementType(IntEnum):
     Road = 1
-    House = 2
-    FireBrigade = 3
+    ForestersHut = 2
+    House = 3
+    FishersHut = 4
+    MarketPlace = 5
+    FireBrigade = 6
 
 
 class Rotation(IntEnum):

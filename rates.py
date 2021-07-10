@@ -2,7 +2,6 @@ import numpy as np
 
 
 good_names = (
-    'money',
     'iron ore',
     'gold',
     'wool',
@@ -25,12 +24,12 @@ good_names = (
     'jewelry',
     'tools',
     'wood',
-    'bricks'
+    'bricks',
+    'money'
 )
 
 
 good_names_COD = (
-    '',
     'EISENERZ',
     'GOLD',
     'BAUMWOLLE',
@@ -53,7 +52,8 @@ good_names_COD = (
     'SCHMUCK',
     'WERKZEUG',
     'HOLZ',
-    'STEINE'
+    'STEINE',
+    ''
 )
 
 

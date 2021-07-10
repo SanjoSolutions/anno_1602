@@ -6,9 +6,13 @@ from pymem import Pymem
 import pyautogui
 from win32gui import FindWindow, GetClientRect, ClientToScreen, GetForegroundWindow
 
-from other.build_template import the_ultimate_city, PlacementType, Placement
-from other.main import read_ships, ShipMovingStatus
+from other.Good import Good
+from other.build_template import the_ultimate_city, PlacementType, Placement, Rotation
+from other.main import read_ships, ShipMovingStatus, read_cities
+from other.rates import create_rates, good_names
 
+
+pyautogui.FAILSAFE = False
 
 # Goal:
 # n aristocrates
@@ -16,7 +20,6 @@ from other.main import read_ships, ShipMovingStatus
 
 # TODO: taxes as yield of money.
 # TODO: production building operating cost / production building sleep operating cost as consumption of money.
-from other.rates import create_rates, good_names
 
 cycle = 60.0  # in seconds
 
@@ -257,36 +260,33 @@ def get_window_client_area_position():
 
 
 def click_at_client_area_position(position):
-    left, top = get_window_client_area_position()
-    click_position = (
-        left + position[0],
-        top + position[1]
-    )
+    click_position = convert_client_area_position_to_screen_position(position)
     pyautogui.click(click_position[0], click_position[1])
 
 
-def select_build_menu():
+def move_to_client_area_position(position):
+    move_position = convert_client_area_position_to_screen_position(position)
+    pyautogui.moveTo(move_position[0], move_position[1])
+
+
+def drag_to_client_area_position(position):
+    drag_to_position = convert_client_area_position_to_screen_position(position)
+    pyautogui.mouseDown()
+    pyautogui.moveTo(drag_to_position[0], drag_to_position[1])
+    pyautogui.mouseUp()
+
+
+def convert_client_area_position_to_screen_position(mouse_client_area_position):
+    left, top = get_window_client_area_position()
+    mouse_position = (
+        left + mouse_client_area_position[0],
+        top + mouse_client_area_position[1]
+    )
+    return mouse_position
+
+
+def select_construction_mode():
     click_at_client_area_position((817, 308))
-
-
-def select_streets_and_bridges():
-    click_at_client_area_position((869, 667))
-
-
-def select_public_buildings():
-    click_at_client_area_position((983, 724))
-
-
-def select_road():
-    click_at_client_area_position((806, 593))
-
-
-def select_house():
-    click_at_client_area_position((805, 663))
-
-
-def select_fire_brigade():
-    click_at_client_area_position((978, 549))
 
 
 def move_ship(index, position):
@@ -304,14 +304,14 @@ def open_ship_menu():
     pyautogui.press('s')
 
 
-def open_status_menu():
+def select_info_mode():
     pyautogui.press('i')
 
 
 def build_warehouse_from_ship(ship, position):
     select_ship(ship)
     go_to_map_position(position)
-    open_status_menu()
+    select_info_mode()
     select_warehouse_from_ship()
     click_at_map_position(position)
 
@@ -321,19 +321,72 @@ def select_warehouse_from_ship():
 
 
 def select_building(placement):
-    select_build_menu()
+    select_construction_mode()
     type = placement.type
     if type == PlacementType.Road:
         select_streets_and_bridges()
         select_road()
+    elif type == PlacementType.ForestersHut:
+        select_farms_and_plantations()
+        select_foresters_hut()
     elif type == PlacementType.House:
         select_public_buildings()
         select_house()
+    elif type == PlacementType.FishersHut:
+        select_docks()
+        select_fishers_hut()
+    elif type == PlacementType.MarketPlace:
+        select_public_buildings()
+        select_market_place()
     elif type == PlacementType.FireBrigade:
         select_public_buildings()
         select_fire_brigade()
     else:
         raise ValueError('placement "' + str(type) + '" not supported.')
+
+
+def select_streets_and_bridges():
+    click_at_client_area_position((869, 667))
+
+
+def select_road():
+    click_at_client_area_position((806, 593))
+
+
+def select_farms_and_plantations():
+    click_at_client_area_position((873, 726))
+
+
+def select_foresters_hut():
+    click_at_client_area_position((865, 662))
+
+
+def select_forest():
+    click_at_client_area_position((922, 662))
+
+
+def select_docks():
+    click_at_client_area_position((928, 728))
+
+
+def select_fishers_hut():
+    click_at_client_area_position((806, 604))
+
+
+def select_public_buildings():
+    click_at_client_area_position((983, 724))
+
+
+def select_house():
+    click_at_client_area_position((805, 663))
+
+
+def select_market_place():
+    click_at_client_area_position((864, 662))
+
+
+def select_fire_brigade():
+    click_at_client_area_position((978, 549))
 
 
 def place_building(placement):
@@ -343,17 +396,43 @@ def place_building(placement):
 
 
 def click_at_map_position(position):
+    mouse_position = determine_mouse_client_area_position(position)
+    click_at_client_area_position(mouse_position)
+    mouse_click_position = determine_mouse_position()
+    print(position, mouse_click_position, (mouse_click_position[0] - position[0], mouse_click_position[1] - position[1]))
+
+
+def move_mouse_to_map_position(position):
+    mouse_position = determine_mouse_client_area_position(position)
+    move_to_client_area_position(mouse_position)
+
+
+def drag_mouse_to_map_position(position):
+    mouse_position = determine_mouse_client_area_position(position)
+    drag_to_client_area_position(mouse_position)
+
+    actual_mouse_position = determine_mouse_position()
+    print(
+        position,
+        actual_mouse_position,
+        (actual_mouse_position[0] - position[0], actual_mouse_position[1] - position[1])
+    )
+
+
+def determine_mouse_client_area_position(position):
     camera_x = process.read_int(base_address + camera_x_offset)
     camera_y = process.read_int(base_address + camera_y_offset)
-    delta_x = position[0] - camera_x
-    delta_y = position[1] - camera_y
-    angle = 26.6
-    delta_x_angle = math.radians(360 - angle)
-    delta_y_angle = math.radians(180 + angle)
-    tile_length = 16
-    map_viewport_center_left = map_viewport_left + round(0.5 * map_viewport_width) + 31
-    map_viewport_center_top = map_viewport_top + round(0.5 * map_viewport_height) + 32
-    click_at_client_area_position((
+    delta_x = position[0] - camera_x + 0.5 + 2
+    delta_y = position[1] - camera_y + 0.5
+    tile_width = 32
+    tile_height = 16
+    angle = math.atan(float(0.5 * tile_height) / (0.5 * tile_width))
+    delta_x_angle = math.radians(360) - angle
+    delta_y_angle = math.radians(180) + angle
+    tile_length = math.sqrt((0.5 * tile_width) ** 2 + (0.5 * tile_height) ** 2)
+    map_viewport_center_left = map_viewport_left + round(0.5 * map_viewport_width)  # + 31
+    map_viewport_center_top = map_viewport_top + round(0.5 * map_viewport_height)  # + 32
+    return (
         round(
             map_viewport_center_left +
             delta_x * tile_length * math.cos(delta_x_angle) +
@@ -362,13 +441,11 @@ def click_at_map_position(position):
         round(
             map_viewport_center_top -
             (
-                delta_x * tile_length * math.sin(delta_x_angle) +
-                delta_y * tile_length * math.sin(delta_y_angle)
+                    delta_x * tile_length * math.sin(delta_x_angle) +
+                    delta_y * tile_length * math.sin(delta_y_angle)
             )
         )
-    ))
-    mouse_click_position = determine_mouse_click_position()
-    print(position, mouse_click_position, (mouse_click_position[0] - position[0], mouse_click_position[1] - position[1]))
+    )
 
 
 def click_at_map_position_0():
@@ -377,6 +454,12 @@ def click_at_map_position_0():
     position = (camera_x, camera_y)
     click_at_map_position(position)
 
+
+def determine_mouse_position():
+    return (
+        process.read_short(base_address + 0x2C308C),
+        process.read_short(base_address + 0x2C3088)
+    )
 
 
 def determine_mouse_click_position():
@@ -393,9 +476,38 @@ def go_to_map_position(position):
     ))
 
 
+def when_can_build_house(city, fn):
+    while not can_build_house(city):
+        sleep(1.0 / 60)
+    fn()
+
+
+def can_build_house(city_index):
+    cities = read_cities(process)
+    city = cities[city_index]
+    supplies = city.supplies
+    wood = supplies[21].amount / 32
+    return wood >= 3
+
+
+def when_can_build_market_place(city, fn):
+    while not can_build_market_place(city):
+        sleep(1.0 / 60)
+    fn()
+
+
+def can_build_market_place(city_index):
+    cities = read_cities(process)
+    city = cities[city_index]
+    supplies = city.supplies
+    tools = supplies[20].amount / 32
+    wood = supplies[21].amount / 32
+    return tools >= 4 and wood >= 10
+
+
 def when_ship_has_arrived(ship, fn):
     while not has_ship_arrived(ship):
-        sleep(1)
+        sleep(1.0 / 60)
     fn()
 
 
@@ -403,6 +515,281 @@ def has_ship_arrived(ship_index):
     ships = read_ships(process)
     ship = ships[ship_index]
     return ship.moving_status == ShipMovingStatus.Standing
+
+
+def when_resources_available(city, resources, fn):
+    while not are_resources_available(city, resources):
+        sleep(1.0 / 60)
+    fn()
+
+
+def are_resources_available(city_index, resources):
+    cities = read_cities(process)
+    city = cities[city_index]
+    supplies = np.array(tuple(int(supply.amount / 32) for supply in city.supplies))
+    return all(supplies >= resources[:len(supplies)])
+
+
+def exchange_goods_between_warehouse_and_ship(ship):
+    select_ship(ship)
+    select_info_mode()
+    click_at_client_area_position((821, 611))
+
+
+def move_all_goods_from_ship_to_warehouse(ship):
+    exchange_goods_between_warehouse_and_ship(ship)
+    set_amount_to_be_traded_to_50t()
+    load_goods_into_the_warehouse()
+    select_slot_2_of_ship()
+    load_goods_into_the_warehouse()
+    select_slot_3_of_ship()
+    load_goods_into_the_warehouse()
+    select_slot_4_of_ship()
+    load_goods_into_the_warehouse()
+
+
+def load_goods_into_the_warehouse():
+    click_at_client_area_position((979, 554))
+
+
+def select_slot_2_of_ship():
+    click_at_client_area_position((875, 674))
+
+
+def select_slot_3_of_ship():
+    click_at_client_area_position((928, 676))
+
+
+def select_slot_4_of_ship():
+    click_at_client_area_position((980, 672))
+
+
+def build_foresters_hut(position):
+    place_building(Placement(PlacementType.ForestersHut, position))
+
+
+def build_road(from_position, to_position):
+    go_to_map_position(from_position)
+    select_construction_mode()
+    select_streets_and_bridges()
+    select_road()
+    move_mouse_to_map_position(from_position)
+    drag_mouse_to_map_position(to_position)
+
+
+def build_forest_around_foresters_hut(position):
+    go_to_map_position(position)
+    select_construction_mode()
+    select_farms_and_plantations()
+    select_forest()
+    move_mouse_to_map_position((position[0] + 2, position[1] + 4))
+    drag_mouse_to_map_position((position[0] - 1, position[1] - 3))
+    move_mouse_to_map_position((position[0] - 3, position[1] + 2))
+    drag_mouse_to_map_position((position[0] + 4, position[1] - 1))
+    click_at_map_position((position[0] - 2, position[1] + 3))
+    click_at_map_position((position[0] - 2, position[1] - 2))
+    click_at_map_position((position[0] + 3, position[1] - 1))
+    click_at_map_position((position[0] + 3, position[1] + 3))
+
+
+def build_house(position):
+    place_building(Placement(PlacementType.House, position))
+
+
+def increase_taxes_to_maximum(house_position):
+    back_to_previous_menu()
+    click_at_map_position(house_position)
+    for i in range(16):
+        increase_taxes_one_step()
+
+
+def increase_taxes_one_step():
+    click_at_client_area_position((988, 537))
+
+
+def back_to_previous_menu():
+    pyautogui.press('esc')
+
+
+def build_fishers_hut(position):
+    place_building(Placement(PlacementType.FishersHut, position))
+
+
+def build_market_place(position):
+    place_building(Placement(PlacementType.MarketPlace, position))
+
+
+def load_resources_into_ship(ship, resources):
+    select_ship(ship)
+    exchange_goods_between_warehouse_and_ship(ship)
+    good_groups = (
+        (
+            Good.Tools,
+            Good.Wood,
+            Good.Bricks
+        ),
+        (
+            Good.Swords,
+            Good.Muskets,
+            Good.Cannon
+        ),
+        (
+            Good.Food,
+            Good.TabaccoProducts,
+            Good.Spices,
+            Good.Cocoa,
+            Good.Liquor,
+            Good.Cloth,
+            Good.Clothes,
+            Good.Jewelry
+        ),
+        (
+            Good.IronOre,
+            Good.Gold,
+            Good.Wool,
+            Good.Sugar,
+            Good.Tabacco,
+            Good.Cattle,
+            Good.Grain,
+            Good.Flour,
+            Good.Iron
+        )
+    )
+    for good_group_index in range(len(good_groups)):
+        good_group = good_groups[good_group_index]
+        has_good_group_been_selected = False
+        for good_index in range(len(good_group)):
+            good = good_group[good_index]
+            if resources[good] >= 1:
+                if not has_good_group_been_selected:
+                    select_exchange_goods_good_group(good_group_index)
+                    has_good_group_been_selected = True
+                select_good_to_be_transferred(good_index)
+                transfer_selected_good_to_ship(resources[good])
+
+
+def select_exchange_goods_good_group(index):
+    if index == 0:
+        select_exchange_goods_good_group_building_material()
+    elif index == 1:
+        select_exchange_goods_good_group_weapons()
+    elif index == 2:
+        select_exchange_goods_good_group_consumer_goods()
+    elif index == 3:
+        select_exchange_goods_good_group_raw_materials()
+    else:
+        raise Exception('Unexpected index: ' + str(index))
+
+
+def select_exchange_goods_good_group_building_material():
+    click_at_client_area_position((815, 495))
+
+
+def select_exchange_goods_good_group_weapons():
+    click_at_client_area_position((873, 495))
+
+
+def select_exchange_goods_good_group_consumer_goods():
+    click_at_client_area_position((929, 495))
+
+
+def select_exchange_goods_good_group_raw_materials():
+    click_at_client_area_position((988, 499))
+
+
+def select_good_to_be_transferred(good_index):
+    if good_index == 0:
+        select_good_to_be_transferred_1()
+    elif good_index == 1:
+        select_good_to_be_transferred_2()
+    elif good_index == 2:
+        select_good_to_be_transferred_3()
+    elif good_index == 3:
+        select_good_to_be_transferred_4()
+    else:
+        raise Exception('Not implemented to select good to be transferred with index: ' + str(good_index))
+    # TODO: Implement scrolling to goods
+
+
+def select_good_to_be_transferred_1():
+    click_at_client_area_position((825, 445))
+
+
+def select_good_to_be_transferred_2():
+    click_at_client_area_position((874, 445))
+
+
+def select_good_to_be_transferred_3():
+    click_at_client_area_position((930, 445))
+
+
+def select_good_to_be_transferred_4():
+    click_at_client_area_position((979, 445))
+
+
+def transfer_selected_good_to_ship(amount):
+    remaining_amount = amount
+    amounts_to_be_traded = [1, 5, 10, 50]
+    for index in range(len(amounts_to_be_traded) - 1, -1, -1):
+        amount_to_be_traded = amounts_to_be_traded[index]
+        if remaining_amount >= amount_to_be_traded:
+            set_amount_to_be_traded(amount_to_be_traded)
+            while remaining_amount >= amount_to_be_traded:
+                load_goods_onboard_the_ship()
+                remaining_amount -= amount_to_be_traded
+
+
+def set_amount_to_be_traded(amount):
+    if amount == 1:
+        set_amount_to_be_traded_to_1t()
+    elif amount == 5:
+        set_amount_to_be_traded_to_5t()
+    elif amount == 10:
+        set_amount_to_be_traded_to_10t()
+    elif amount == 50:
+        set_amount_to_be_traded_to_50t()
+
+
+def set_amount_to_be_traded_to_1t():
+    click_at_client_area_position((856, 555))
+
+
+def set_amount_to_be_traded_to_5t():
+    click_at_client_area_position((879, 554))
+
+
+def set_amount_to_be_traded_to_10t():
+    click_at_client_area_position((904, 553))
+
+
+def set_amount_to_be_traded_to_50t():
+    click_at_client_area_position((934, 553))
+
+
+def load_goods_onboard_the_ship():
+    click_at_client_area_position((821, 552))
+
+
+def set_tools_to_be_bought():
+    select_warehouse()
+    determine_products_to_be_bought()
+    determine_first_product_to_be_bought_to_be_tools()
+
+
+def select_warehouse():
+    warehouse_position = (214, 161)
+    go_to_map_position(warehouse_position)
+    click_at_map_position(warehouse_position)
+
+
+def determine_products_to_be_bought():
+    click_at_client_area_position((864, 731))
+
+
+def determine_first_product_to_be_bought_to_be_tools():
+    click_at_client_area_position((822, 619))
+    click_at_client_area_position((815, 718))
+    click_at_client_area_position((875, 533))  # set buy price to 75 gold
 
 
 def build(build_template, position):
@@ -418,13 +805,64 @@ def main():
     hwnd = FindWindow(None, 'Anno 1602')
     while GetForegroundWindow() != hwnd:
         sleep(1)
+    sleep(1)
 
-    # ship = 0
-    # ship_destination = (216, 165)
+    ship = 0
+    # ship_destination = (217, 162)
     # move_ship(ship, ship_destination)
     # warehouse_position = (213, 160)
     # when_ship_has_arrived(ship, lambda: build_warehouse_from_ship(ship, warehouse_position))
-    build(the_ultimate_city, (217, 151))
+    # move_all_goods_from_ship_to_warehouse(ship)
+    # build_road((212, 162), (197, 162))
+    # foresters_hut_position = (207, 166)
+    # build_foresters_hut(foresters_hut_position)
+    # build_road((208, 165), (208, 163))
+    # build_forest_around_foresters_hut(foresters_hut_position)
+    # foresters_hut_position = (199, 166)
+    # build_foresters_hut(foresters_hut_position)
+    # build_road((200, 165), (200, 163))
+    # build_forest_around_foresters_hut(foresters_hut_position)
+    # build_road((212, 161), (212, 148))
+    city = 0
+    # house_positions = (
+    #     (210, 160),
+    #     (208, 160),
+    #     (206, 160),
+    #     (210, 158),
+    #     (208, 158),
+    #     (206, 158),
+    #     (210, 155),
+    #     (208, 155),
+    #     (206, 155),
+    #     (210, 153),
+    #     (208, 153),
+    #     (206, 153),
+    #     (203, 160),
+    #     (203, 158),
+    # )
+    # for index in range(len(house_positions)):
+    #     house_position = house_positions[index]
+    #     when_can_build_house(city, lambda: build_house(house_position))
+    #     if index == 0:
+    #         increase_taxes_to_maximum(house_position)
+    # build_fishers_hut((215, 159))
+    # build_road((214, 159), (213, 159))
+    warehouse_cost = create_rates({'tools': 3, 'wood': 6})
+
+    def settle_second_island():
+        load_resources_into_ship(ship, warehouse_cost)
+        move_ship(ship, (248, 159))
+        when_ship_has_arrived(ship, build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought)
+
+    def build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought():
+        build_warehouse_from_ship(ship, (251, 156))
+        move_ship(ship, (217, 162))
+        set_tools_to_be_bought()
+
+    when_resources_available(city, warehouse_cost, settle_second_island)
+
+    when_can_build_market_place(city, lambda: build_market_place((195, 158)))
+    # build(the_ultimate_city, (217, 151))
     exit()
 
     # -12, -6
