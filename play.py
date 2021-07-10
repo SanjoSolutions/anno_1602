@@ -286,7 +286,7 @@ def convert_client_area_position_to_screen_position(mouse_client_area_position):
 
 
 def select_construction_mode():
-    click_at_client_area_position((817, 308))
+    pyautogui.press('b')
 
 
 def move_ship(index, position):
@@ -341,6 +341,12 @@ def select_building(placement):
     elif type == PlacementType.FireBrigade:
         select_public_buildings()
         select_fire_brigade()
+    elif type == PlacementType.SheepFarm:
+        select_farms_and_plantations()
+        select_sheep_farm()
+    elif type == PlacementType.WeaversHut:
+        select_workshops()
+        select_weavers_hut()
     else:
         raise ValueError('placement "' + str(type) + '" not supported.')
 
@@ -353,8 +359,20 @@ def select_road():
     click_at_client_area_position((806, 593))
 
 
+def select_workshops():
+    click_at_client_area_position((815, 725))
+
+
+def select_weavers_hut():
+    click_at_client_area_position((807, 665))
+
+
 def select_farms_and_plantations():
-    click_at_client_area_position((873, 726))
+    click_at_client_area_position((870, 731))
+
+
+def select_sheep_farm():
+    click_at_client_area_position((923, 608))
 
 
 def select_foresters_hut():
@@ -792,6 +810,51 @@ def determine_first_product_to_be_bought_to_be_tools():
     click_at_client_area_position((875, 533))  # set buy price to 75 gold
 
 
+def build_cloth_production_group(city, position):  # (186, 161)
+    when_resources_available(
+        city,
+        create_rates({'tools': 2, 'wood': 4}),
+        lambda: build_sheep_farm((position[0] + 3, position[1] - 4))  # (189, 157)
+    )
+    when_resources_available(
+        city,
+        create_rates({'tools': 2, 'wood': 4}),
+        lambda: build_sheep_farm((position[0] + 3, position[1] - 12))
+    )
+    when_resources_available(
+        city,
+        create_rates({'tools': 3, 'wood': 6}),
+        lambda: build_weavers_hut((position[0] + 6, position[1] - 8))
+    )
+
+
+def build_sheep_farm(position):
+    place_building(Placement(PlacementType.SheepFarm, position))
+    remove_trees_around_sheep_farm(position)
+
+
+def remove_trees_around_sheep_farm(position):
+    go_to_map_position(position)
+    activate_demolition_mode()
+    move_mouse_to_map_position((position[0] + 2, position[1] + 4))
+    drag_mouse_to_map_position((position[0] - 1, position[1] - 3))
+    move_mouse_to_map_position((position[0] - 3, position[1] + 2))
+    drag_mouse_to_map_position((position[0] + 4, position[1] - 1))
+    click_at_map_position((position[0] - 2, position[1] + 3))
+    click_at_map_position((position[0] - 2, position[1] - 2))
+    click_at_map_position((position[0] + 3, position[1] - 1))
+    click_at_map_position((position[0] + 3, position[1] + 3))
+
+
+def activate_demolition_mode():
+    select_construction_mode()
+    click_at_client_area_position((984, 661))
+
+
+def build_weavers_hut(position):
+    place_building(Placement(PlacementType.WeaversHut, position))
+
+
 def build(build_template, position):
     for placement in build_template.placements:
         x = position[0] + placement.position[0]
@@ -847,21 +910,24 @@ def main():
     #         increase_taxes_to_maximum(house_position)
     # build_fishers_hut((215, 159))
     # build_road((214, 159), (213, 159))
-    warehouse_cost = create_rates({'tools': 3, 'wood': 6})
-
-    def settle_second_island():
-        load_resources_into_ship(ship, warehouse_cost)
-        move_ship(ship, (248, 159))
-        when_ship_has_arrived(ship, build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought)
-
-    def build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought():
-        build_warehouse_from_ship(ship, (251, 156))
-        move_ship(ship, (217, 162))
-        set_tools_to_be_bought()
-
-    when_resources_available(city, warehouse_cost, settle_second_island)
-
-    when_can_build_market_place(city, lambda: build_market_place((195, 158)))
+    # warehouse_cost = create_rates({'tools': 3, 'wood': 6})
+    #
+    # def settle_second_island():
+    #     load_resources_into_ship(ship, warehouse_cost)
+    #     move_ship(ship, (248, 159))
+    #     when_ship_has_arrived(ship, build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought)
+    #
+    # def build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought():
+    #     build_warehouse_from_ship(ship, (251, 156))
+    #     move_ship(ship, (217, 162))
+    #     set_tools_to_be_bought()
+    #
+    # when_resources_available(city, warehouse_cost, settle_second_island)
+    #
+    city = 1
+    # when_can_build_market_place(city, lambda: build_market_place((195, 158)))
+    # build_cloth_production_group(city, (186, 161))
+    build_road((196, 162), (194, 153))
     # build(the_ultimate_city, (217, 151))
     exit()
 

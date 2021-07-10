@@ -15,6 +15,8 @@ class PlacementType(IntEnum):
     FishersHut = 4
     MarketPlace = 5
     FireBrigade = 6
+    SheepFarm = 7
+    WeaversHut = 8
 
 
 class Rotation(IntEnum):
