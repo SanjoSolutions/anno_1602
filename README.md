@@ -2,7 +2,6 @@
 
 This work is devoted to God.
 
-
 ## Setup
 
 The software in this repository has been written for the [GOG version of Anno 1602](https://www.gog.com/game/anno_1602_ad).
