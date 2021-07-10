@@ -29,7 +29,8 @@ good_names = (
 )
 
 
-good_names_COD = (
+# The names used in haeuser.txt under "Ware:"
+cod_production_good_names = (
     'EISENERZ',
     'GOLD',
     'BAUMWOLLE',
@@ -53,12 +54,45 @@ good_names_COD = (
     'WERKZEUG',
     'HOLZ',
     'STEINE',
-    'MONEY'
+    None
+)
+
+# The names used in haeuser.txt under "Objekt: HAUS_BAUKOST"
+cod_building_cost_good_names = (
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    'Kanon',
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    'Werkzeug',
+    'Holz',
+    'Ziegel',
+    'Money'
 )
 
 
 def cod_good_name_to_internal_good_name(cod_good_name):
-    index = good_names_COD.index(cod_good_name)
+    index = cod_production_good_names.index(cod_good_name)
+    return good_names[index]
+
+
+def cod_building_cost_good_name_to_internal_good_name(cod_building_cost_good_name):
+    index = cod_building_cost_good_names.index(cod_building_cost_good_name)
     return good_names[index]
 
 

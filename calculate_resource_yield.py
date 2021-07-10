@@ -1,6 +1,7 @@
 from a_parser import parse
 from other.Building import Building
-from other.rates import create_rates, cod_good_name_to_internal_good_name
+from other.rates import create_rates, cod_good_name_to_internal_good_name, \
+    cod_building_cost_good_name_to_internal_good_name
 
 
 def is_house_of_kind(house, kind):
@@ -80,7 +81,7 @@ def determine_building_cost(building):
     return create_rates(
         dict(
             (
-                cod_good_name_to_internal_good_name(resource_name.upper()),
+                cod_building_cost_good_name_to_internal_good_name(resource_name),
                 amount
             )
             for resource_name, amount
@@ -90,7 +91,7 @@ def determine_building_cost(building):
 
 
 def find_building(building):
-    return next((house for house in haeuser['HAUS'] if house['@Nummer'] == building), default=None)
+    return next((house for house in haeuser['HAUS'] if house['@Nummer'] == building), None)
 
 
 def main():

@@ -931,7 +931,7 @@ def main():
         set_tools_to_be_bought()
 
     when_resources_available(city, warehouse_cost, settle_second_island)
-    when_can_build_market_place(city, lambda: build_market_place((195, 158)))
+    when_can_build_market_place(city, lambda: build_market_place((195, 158)))  # FIXME: seems to sometimes build it with different rotation
     build_cloth_production_group(city, (186, 161))
     build_road((196, 162), (194, 153))
     when_can_build_chapel(city, lambda: build_chapel((203, 155)))
