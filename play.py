@@ -7,7 +7,9 @@ import pyautogui
 from win32gui import FindWindow, GetClientRect, ClientToScreen, GetForegroundWindow
 
 from other.Good import Good
-from other.build_template import the_ultimate_city, PlacementType, Placement, Rotation
+from other.build_template import the_ultimate_city, Placement, Rotation
+from other.calculate_resource_yield import determine_building_cost
+from other.Building import Building
 from other.main import read_ships, ShipMovingStatus, read_cities
 from other.rates import create_rates, good_names
 
@@ -274,6 +276,7 @@ def drag_to_client_area_position(position):
     pyautogui.mouseDown()
     pyautogui.moveTo(drag_to_position[0], drag_to_position[1])
     pyautogui.mouseUp()
+    pyautogui.mouseUp()
 
 
 def convert_client_area_position_to_screen_position(mouse_client_area_position):
@@ -283,6 +286,10 @@ def convert_client_area_position_to_screen_position(mouse_client_area_position):
         top + mouse_client_area_position[1]
     )
     return mouse_position
+
+
+def speed_up_8x():
+    pyautogui.hotkey('shift', 'f8')
 
 
 def select_construction_mode():
@@ -323,30 +330,33 @@ def select_warehouse_from_ship():
 def select_building(placement):
     select_construction_mode()
     type = placement.type
-    if type == PlacementType.Road:
+    if type == Building.Road:
         select_streets_and_bridges()
         select_road()
-    elif type == PlacementType.ForestersHut:
+    elif type == Building.ForestersHut:
         select_farms_and_plantations()
         select_foresters_hut()
-    elif type == PlacementType.House:
+    elif type == Building.House:
         select_public_buildings()
         select_house()
-    elif type == PlacementType.FishersHut:
+    elif type == Building.FishersHut:
         select_docks()
         select_fishers_hut()
-    elif type == PlacementType.MarketPlace:
+    elif type == Building.MarketPlace:
         select_public_buildings()
         select_market_place()
-    elif type == PlacementType.FireBrigade:
-        select_public_buildings()
-        select_fire_brigade()
-    elif type == PlacementType.SheepFarm:
+    elif type == Building.SheepFarm:
         select_farms_and_plantations()
         select_sheep_farm()
-    elif type == PlacementType.WeaversHut:
+    elif type == Building.WeaversHut:
         select_workshops()
         select_weavers_hut()
+    elif type == Building.Chapel:
+        select_public_buildings()
+        select_chapel()
+    elif type == Building.FireBrigade:
+        select_public_buildings()
+        select_fire_brigade()
     else:
         raise ValueError('placement "' + str(type) + '" not supported.')
 
@@ -401,6 +411,10 @@ def select_house():
 
 def select_market_place():
     click_at_client_area_position((864, 662))
+
+
+def select_chapel():
+    click_at_client_area_position((921, 665))
 
 
 def select_fire_brigade():
@@ -495,38 +509,15 @@ def go_to_map_position(position):
 
 
 def when_can_build_house(city, fn):
-    while not can_build_house(city):
-        sleep(1.0 / 60)
-    fn()
-
-
-def can_build_house(city_index):
-    cities = read_cities(process)
-    city = cities[city_index]
-    supplies = city.supplies
-    wood = supplies[21].amount / 32
-    return wood >= 3
+    when_can_build_building(city, Building.House, fn)
 
 
 def when_can_build_market_place(city, fn):
-    while not can_build_market_place(city):
-        sleep(1.0 / 60)
-    fn()
-
-
-def can_build_market_place(city_index):
-    cities = read_cities(process)
-    city = cities[city_index]
-    supplies = city.supplies
-    tools = supplies[20].amount / 32
-    wood = supplies[21].amount / 32
-    return tools >= 4 and wood >= 10
+    when_can_build_building(city, Building.MarketPlace, fn)
 
 
 def when_ship_has_arrived(ship, fn):
-    while not has_ship_arrived(ship):
-        sleep(1.0 / 60)
-    fn()
+    do_when_condition_is_fulfilled(lambda: has_ship_arrived(ship), fn)
 
 
 def has_ship_arrived(ship_index):
@@ -536,9 +527,7 @@ def has_ship_arrived(ship_index):
 
 
 def when_resources_available(city, resources, fn):
-    while not are_resources_available(city, resources):
-        sleep(1.0 / 60)
-    fn()
+    do_when_condition_is_fulfilled(lambda: are_resources_available(city, resources), fn)
 
 
 def are_resources_available(city_index, resources):
@@ -546,6 +535,28 @@ def are_resources_available(city_index, resources):
     city = cities[city_index]
     supplies = np.array(tuple(int(supply.amount / 32) for supply in city.supplies))
     return all(supplies >= resources[:len(supplies)])
+
+
+def when_can_build_fishers_hut(city, fn):
+    when_can_build_building(city, Building.FishersHut, fn)
+
+
+def when_can_build_chapel(city, fn):
+    when_can_build_building(city, Building.Chapel, fn)
+
+
+def when_can_build_building(city, building, fn):
+    when_resources_available(city, determine_building_cost(building), fn)
+
+
+def do_when_conditions_are_fulfilled(conditions, fn):
+    while not all(condition() for condition in conditions):
+        sleep(1.0 / 60)
+    fn()
+
+
+def do_when_condition_is_fulfilled(condition, fn):
+    do_when_conditions_are_fulfilled((condition,), fn)
 
 
 def exchange_goods_between_warehouse_and_ship(ship):
@@ -583,7 +594,7 @@ def select_slot_4_of_ship():
 
 
 def build_foresters_hut(position):
-    place_building(Placement(PlacementType.ForestersHut, position))
+    place_building(Placement(Building.ForestersHut, position))
 
 
 def build_road(from_position, to_position):
@@ -611,7 +622,7 @@ def build_forest_around_foresters_hut(position):
 
 
 def build_house(position):
-    place_building(Placement(PlacementType.House, position))
+    place_building(Placement(Building.House, position))
 
 
 def increase_taxes_to_maximum(house_position):
@@ -630,11 +641,11 @@ def back_to_previous_menu():
 
 
 def build_fishers_hut(position):
-    place_building(Placement(PlacementType.FishersHut, position))
+    place_building(Placement(Building.FishersHut, position))
 
 
 def build_market_place(position):
-    place_building(Placement(PlacementType.MarketPlace, position))
+    place_building(Placement(Building.MarketPlace, position))
 
 
 def load_resources_into_ship(ship, resources):
@@ -810,26 +821,14 @@ def determine_first_product_to_be_bought_to_be_tools():
     click_at_client_area_position((875, 533))  # set buy price to 75 gold
 
 
-def build_cloth_production_group(city, position):  # (186, 161)
-    when_resources_available(
-        city,
-        create_rates({'tools': 2, 'wood': 4}),
-        lambda: build_sheep_farm((position[0] + 3, position[1] - 4))  # (189, 157)
-    )
-    when_resources_available(
-        city,
-        create_rates({'tools': 2, 'wood': 4}),
-        lambda: build_sheep_farm((position[0] + 3, position[1] - 12))
-    )
-    when_resources_available(
-        city,
-        create_rates({'tools': 3, 'wood': 6}),
-        lambda: build_weavers_hut((position[0] + 6, position[1] - 8))
-    )
+def build_cloth_production_group(city, position):
+    when_can_build_building(city, Building.SheepFarm, lambda: build_sheep_farm((position[0] + 3, position[1] - 4)))
+    when_can_build_building(city, Building.SheepFarm, lambda: build_sheep_farm((position[0] + 3, position[1] - 12)))
+    when_can_build_building(city, Building.WeaversHut, lambda: build_weavers_hut((position[0] + 6, position[1] - 8)))
 
 
 def build_sheep_farm(position):
-    place_building(Placement(PlacementType.SheepFarm, position))
+    place_building(Placement(Building.SheepFarm, position))
     remove_trees_around_sheep_farm(position)
 
 
@@ -852,7 +851,11 @@ def activate_demolition_mode():
 
 
 def build_weavers_hut(position):
-    place_building(Placement(PlacementType.WeaversHut, position))
+    place_building(Placement(Building.WeaversHut, position))
+
+
+def build_chapel(position):
+    place_building(Placement(Building.Chapel, position))
 
 
 def build(build_template, position):
@@ -870,72 +873,82 @@ def main():
         sleep(1)
     sleep(1)
 
+    speed_up_8x()
+
     ship = 0
-    # ship_destination = (217, 162)
-    # move_ship(ship, ship_destination)
-    # warehouse_position = (213, 160)
-    # when_ship_has_arrived(ship, lambda: build_warehouse_from_ship(ship, warehouse_position))
-    # move_all_goods_from_ship_to_warehouse(ship)
-    # build_road((212, 162), (197, 162))
-    # foresters_hut_position = (207, 166)
-    # build_foresters_hut(foresters_hut_position)
-    # build_road((208, 165), (208, 163))
-    # build_forest_around_foresters_hut(foresters_hut_position)
-    # foresters_hut_position = (199, 166)
-    # build_foresters_hut(foresters_hut_position)
-    # build_road((200, 165), (200, 163))
-    # build_forest_around_foresters_hut(foresters_hut_position)
-    # build_road((212, 161), (212, 148))
+    ship_destination = (217, 162)
+    move_ship(ship, ship_destination)
+    warehouse_position = (213, 160)
+    when_ship_has_arrived(ship, lambda: build_warehouse_from_ship(ship, warehouse_position))
+    move_all_goods_from_ship_to_warehouse(ship)
+    build_road((212, 162), (197, 162))
+    foresters_hut_position = (207, 166)
+    build_foresters_hut(foresters_hut_position)
+    build_road((208, 165), (208, 163))
+    build_forest_around_foresters_hut(foresters_hut_position)
+    foresters_hut_position = (199, 166)
+    build_foresters_hut(foresters_hut_position)
+    build_road((200, 165), (200, 163))
+    build_forest_around_foresters_hut(foresters_hut_position)
+    build_road((212, 161), (212, 148))
     city = 0
-    # house_positions = (
-    #     (210, 160),
-    #     (208, 160),
-    #     (206, 160),
-    #     (210, 158),
-    #     (208, 158),
-    #     (206, 158),
-    #     (210, 155),
-    #     (208, 155),
-    #     (206, 155),
-    #     (210, 153),
-    #     (208, 153),
-    #     (206, 153),
-    #     (203, 160),
-    #     (203, 158),
-    # )
-    # for index in range(len(house_positions)):
-    #     house_position = house_positions[index]
-    #     when_can_build_house(city, lambda: build_house(house_position))
-    #     if index == 0:
-    #         increase_taxes_to_maximum(house_position)
-    # build_fishers_hut((215, 159))
-    # build_road((214, 159), (213, 159))
-    # warehouse_cost = create_rates({'tools': 3, 'wood': 6})
-    #
-    # def settle_second_island():
-    #     load_resources_into_ship(ship, warehouse_cost)
-    #     move_ship(ship, (248, 159))
-    #     when_ship_has_arrived(ship, build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought)
-    #
-    # def build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought():
-    #     build_warehouse_from_ship(ship, (251, 156))
-    #     move_ship(ship, (217, 162))
-    #     set_tools_to_be_bought()
-    #
-    # when_resources_available(city, warehouse_cost, settle_second_island)
-    #
-    city = 1
-    # when_can_build_market_place(city, lambda: build_market_place((195, 158)))
-    # build_cloth_production_group(city, (186, 161))
+    house_positions = (
+        (210, 160),
+        (208, 160),
+        (206, 160),
+        (210, 158),
+        (208, 158),
+        (206, 158),
+        (210, 155),
+        (208, 155),
+        (206, 155),
+        (210, 153),
+        (208, 153),
+        (206, 153),
+        (203, 160),
+        (203, 158),
+        (201, 160),
+        (201, 158),
+        (199, 158)
+    )
+    for index in range(len(house_positions)):
+        house_position = house_positions[index]
+        when_can_build_house(city, lambda: build_house(house_position))
+        if index == 0:
+            increase_taxes_to_maximum(house_position)
+    when_can_build_fishers_hut(city, lambda: build_fishers_hut((215, 159)))
+    build_road((214, 159), (213, 159))
+    warehouse_cost = create_rates({'tools': 3, 'wood': 6})
+
+    def settle_second_island():
+        load_resources_into_ship(ship, warehouse_cost)
+        move_ship(ship, (248, 159))
+        when_ship_has_arrived(ship, build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought)
+
+    def build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought():
+        build_warehouse_from_ship(ship, (251, 156))
+        move_ship(ship, (217, 162))
+        set_tools_to_be_bought()
+
+    when_resources_available(city, warehouse_cost, settle_second_island)
+    when_can_build_market_place(city, lambda: build_market_place((195, 158)))
+    build_cloth_production_group(city, (186, 161))
     build_road((196, 162), (194, 153))
+    when_can_build_chapel(city, lambda: build_chapel((203, 155)))
     # build(the_ultimate_city, (217, 151))
     exit()
 
     # -12, -6
     # 4
-    place_building(Placement(PlacementType.House, (5 + 9, 5 + 6)))
+    place_building(Placement(Building.House, (5 + 9, 5 + 6)))
 
     while True:
+        # milestones
+        # * population group 2
+        #   * cloth production
+        #   * market place
+        #   * chapel
+
         # TODO: Input from game
         current_population = np.array((
             process.read_int(base_address + population_offset),
@@ -948,11 +961,21 @@ def main():
 
         population_group = 'aristocrats'
         print('population group', population_group)
-        number_of_population = 1000
+        number_of_population = 25000
         print('number of population', number_of_population)
         population = np.zeros((len(population_groups),))
         population[population_groups.index(population_group)] = number_of_population
         print('population', population)
+
+        # def determine_required_number_of_houses_from_aimed_number_of_aristocrats(population):
+        #     number_of_aristocrats = population[-1]
+        #     maximimum_number_of_aristocrats_per_house = maximum_number_of_people_per_house[-1]
+        #     number_of_houses = math.ceil(number_of_aristocrats / float(maximimum_number_of_aristocrats_per_house))
+        #     return number_of_houses
+        #
+        # def determine_required_population_group_sizes_from_aimed_number_of_aristocrats(population):
+        #
+
         number_of_houses = calculate_number_of_houses_for_population(population_group, number_of_population)
         print('number of houses', number_of_houses)
         consumption_rate = number_of_houses * consumption_rates[population_groups.index(population_group)]

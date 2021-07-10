@@ -1,22 +1,13 @@
 from enum import IntEnum
 
+from other.Building import Building
+
 
 class BuildTemplate:
     def __init__(self, width, height, placements):
         self.width = width
         self.height = height
         self.placements = placements
-
-
-class PlacementType(IntEnum):
-    Road = 1
-    ForestersHut = 2
-    House = 3
-    FishersHut = 4
-    MarketPlace = 5
-    FireBrigade = 6
-    SheepFarm = 7
-    WeaversHut = 8
 
 
 class Rotation(IntEnum):
@@ -34,36 +25,36 @@ class Placement:
 
 
 the_ultimate_city = BuildTemplate(width=29, height=29, placements=(
-    Placement(PlacementType.Road, (5, 0)),
-    Placement(PlacementType.Road, (6, 0)),
-    Placement(PlacementType.Road, (7, 0)),
-    Placement(PlacementType.Road, (8, 0)),
-    Placement(PlacementType.Road, (9, 0)),
-    Placement(PlacementType.Road, (10, 0)),
-    Placement(PlacementType.Road, (11, 0)),
-    Placement(PlacementType.Road, (12, 0)),
-    Placement(PlacementType.Road, (13, 0)),
-    Placement(PlacementType.Road, (14, 0)),
-    Placement(PlacementType.Road, (15, 0)),
-    Placement(PlacementType.Road, (16, 0)),
-    Placement(PlacementType.Road, (17, 0)),
-    Placement(PlacementType.Road, (18, 0)),
-    Placement(PlacementType.Road, (19, 0)),
-    Placement(PlacementType.Road, (20, 0)),
-    Placement(PlacementType.Road, (21, 0)),
-    Placement(PlacementType.Road, (22, 0)),
-    Placement(PlacementType.Road, (23, 0)),
-    Placement(PlacementType.Road, (5, 1)),
-    Placement(PlacementType.House, (9, 1)),
-    Placement(PlacementType.House, (11, 1)),
-    Placement(PlacementType.House, (13, 1)),
-    Placement(PlacementType.Road, (15, 1)),
-    Placement(PlacementType.House, (16, 1)),
-    Placement(PlacementType.House, (18, 1)),
-    Placement(PlacementType.House, (20, 1)),
-    Placement(PlacementType.Road, (24, 1)),
-    Placement(PlacementType.Road, (5, 2)),
-    Placement(PlacementType.Road, (15, 2)),
-    Placement(PlacementType.Road, (24, 2)),
-    Placement(PlacementType.FireBrigade, (3, 3)),
+    Placement(Building.DirtRoad, (5, 0)),
+    Placement(Building.DirtRoad, (6, 0)),
+    Placement(Building.DirtRoad, (7, 0)),
+    Placement(Building.DirtRoad, (8, 0)),
+    Placement(Building.DirtRoad, (9, 0)),
+    Placement(Building.DirtRoad, (10, 0)),
+    Placement(Building.DirtRoad, (11, 0)),
+    Placement(Building.DirtRoad, (12, 0)),
+    Placement(Building.DirtRoad, (13, 0)),
+    Placement(Building.DirtRoad, (14, 0)),
+    Placement(Building.DirtRoad, (15, 0)),
+    Placement(Building.DirtRoad, (16, 0)),
+    Placement(Building.DirtRoad, (17, 0)),
+    Placement(Building.DirtRoad, (18, 0)),
+    Placement(Building.DirtRoad, (19, 0)),
+    Placement(Building.DirtRoad, (20, 0)),
+    Placement(Building.DirtRoad, (21, 0)),
+    Placement(Building.DirtRoad, (22, 0)),
+    Placement(Building.DirtRoad, (23, 0)),
+    Placement(Building.DirtRoad, (5, 1)),
+    Placement(Building.House, (9, 1)),
+    Placement(Building.House, (11, 1)),
+    Placement(Building.House, (13, 1)),
+    Placement(Building.DirtRoad, (15, 1)),
+    Placement(Building.House, (16, 1)),
+    Placement(Building.House, (18, 1)),
+    Placement(Building.House, (20, 1)),
+    Placement(Building.DirtRoad, (24, 1)),
+    Placement(Building.DirtRoad, (5, 2)),
+    Placement(Building.DirtRoad, (15, 2)),
+    Placement(Building.DirtRoad, (24, 2)),
+    Placement(Building.FireBrigade, (3, 3)),
 ))

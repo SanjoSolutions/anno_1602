@@ -53,7 +53,7 @@ good_names_COD = (
     'WERKZEUG',
     'HOLZ',
     'STEINE',
-    ''
+    'MONEY'
 )
 
 

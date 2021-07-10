@@ -1,6 +1,6 @@
 from unittest import TestCase, main
 
-from other.build_template import BuildTemplate, PlacementType, Placement, the_ultimate_city
+from other.build_template import BuildTemplate, Placement, the_ultimate_city
 
 
 class TestBuildTemplate(TestCase):

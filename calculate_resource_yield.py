@@ -1,6 +1,5 @@
-from enum import IntEnum
-
 from a_parser import parse
+from other.Building import Building
 from other.rates import create_rates, cod_good_name_to_internal_good_name
 
 
@@ -27,39 +26,11 @@ def retrieve_figure(id):
     return next(figure for figure in figuren['FIGUR'] if is_figure_with_number(figure, id))
 
 
-class Building(IntEnum):
-    HuntingLodge = 402
-    FishersHut = 269
-    GrainFarm = 403
-    WindMill = 381
-    WaterMill = 382
-    ButchersShop = 385
-    Bakery = 384
-    ForestersHut = 401
-    Stonemason = 400
-    OreSmelter = 383
-    ToolMaker = 392
-    CottonPlantation = 404
-    WeaversHut = 387
-    WeavingMill = 388
-    TailorsShop = 386
-    SugarCanePlantation = 407
-    Winery = 408
-    Distillery = 389
-    CocoaPlantation = 406
-    TobaccoPlantation = 405
-    TobaccoProducts = 390
-    SpicePlantation = 409
-    Goldsmith = 391
-    CattleFarm = 410
-    SheepFarm = 411
-
-
 buildings_where_the_worker_collects_resources_and_processes_them = {
     Building.HuntingLodge,
     Building.FishersHut,
     Building.GrainFarm,
-    Building.WindMill,
+    Building.FlourMill,
     Building.WaterMill,
     Building.ButchersShop,
     Building.Bakery,
@@ -71,7 +42,7 @@ buildings_where_the_worker_collects_resources_and_processes_them = {
     Building.WeaversHut,
     Building.WeavingMill,
     Building.TailorsShop,
-    Building.SugarCanePlantation,
+    Building.SugarcanePlantation,
     Building.Winery,
     Building.Distillery,
     Building.CocoaPlantation,
@@ -101,6 +72,25 @@ def calculate_resource_yield(building):
         cod_good_name_to_internal_good_name(building['HAUS_PRODTYP']['Ware']): production_of_resource
     })
     return rates
+
+
+def determine_building_cost(building):
+    building_data = find_building(building)
+    building_cost = building_data['HAUS_BAUKOST']
+    return create_rates(
+        dict(
+            (
+                cod_good_name_to_internal_good_name(resource_name.upper()),
+                amount
+            )
+            for resource_name, amount
+            in building_cost.items()
+        )
+    )
+
+
+def find_building(building):
+    return next((house for house in haeuser['HAUS'] if house['@Nummer'] == building), default=None)
 
 
 def main():
