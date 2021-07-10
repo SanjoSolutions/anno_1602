@@ -315,6 +315,12 @@ def select_info_mode():
     pyautogui.press('i')
 
 
+def explore_the_island(ship):
+    select_ship(ship)
+    select_info_mode()
+    click_at_client_area_position((822, 484))
+
+
 def build_warehouse_from_ship(ship, position):
     select_ship(ship)
     go_to_map_position(position)
@@ -424,7 +430,35 @@ def select_fire_brigade():
 def place_building(placement):
     go_to_map_position(placement.position)
     select_building(placement)
+    rotate_building(placement.rotation)
     click_at_map_position(placement.position)
+
+
+NUMBER_OF_ROTATIONS = 4
+
+
+def rotate_building(rotation):
+    current_rotation = read_rotation()
+    if current_rotation != rotation:
+        if (rotation - current_rotation) % NUMBER_OF_ROTATIONS <= 2:
+            rotate = rotate_90_degree_clockwise
+        else:
+            rotate = rotate_90_degree_counter_clockwise
+        while current_rotation != rotation:
+            rotate()
+            current_rotation = read_rotation()
+
+
+def read_rotation():
+    return process.read_bytes(process.base_address + 0x9E6F4, 1)[0]
+
+
+def rotate_90_degree_clockwise():
+    click_at_client_area_position((1003, 434))
+
+
+def rotate_90_degree_counter_clockwise():
+    click_at_client_area_position((799, 431))
 
 
 def click_at_map_position(position):
@@ -516,6 +550,10 @@ def when_can_build_market_place(city, fn):
     when_can_build_building(city, Building.MarketPlace, fn)
 
 
+def wait_for_ship_has_arrived(ship):
+    wait_for_condition(lambda: has_ship_arrived(ship))
+
+
 def when_ship_has_arrived(ship, fn):
     do_when_condition_is_fulfilled(lambda: has_ship_arrived(ship), fn)
 
@@ -549,9 +587,17 @@ def when_can_build_building(city, building, fn):
     when_resources_available(city, determine_building_cost(building), fn)
 
 
-def do_when_conditions_are_fulfilled(conditions, fn):
+def wait_for_conditions(conditions):
     while not all(condition() for condition in conditions):
         sleep(1.0 / 60)
+
+
+def wait_for_condition(condition):
+    wait_for_conditions((condition,))
+
+
+def do_when_conditions_are_fulfilled(conditions, fn):
+    wait_for_conditions(conditions)
     fn()
 
 
@@ -644,8 +690,8 @@ def build_fishers_hut(position):
     place_building(Placement(Building.FishersHut, position))
 
 
-def build_market_place(position):
-    place_building(Placement(Building.MarketPlace, position))
+def build_market_place(position, rotation):
+    place_building(Placement(Building.MarketPlace, position, rotation))
 
 
 def load_resources_into_ship(ship, resources):
@@ -879,7 +925,9 @@ def main():
     ship_destination = (217, 162)
     move_ship(ship, ship_destination)
     warehouse_position = (213, 160)
-    when_ship_has_arrived(ship, lambda: build_warehouse_from_ship(ship, warehouse_position))
+    wait_for_ship_has_arrived(ship)
+    explore_the_island(ship)
+    build_warehouse_from_ship(ship, warehouse_position)
     move_all_goods_from_ship_to_warehouse(ship)
     build_road((212, 162), (197, 162))
     foresters_hut_position = (207, 166)
@@ -931,10 +979,12 @@ def main():
         set_tools_to_be_bought()
 
     when_resources_available(city, warehouse_cost, settle_second_island)
-    when_can_build_market_place(city, lambda: build_market_place((195, 158)))  # FIXME: seems to sometimes build it with different rotation
+    when_can_build_market_place(city, lambda: build_market_place((195, 158), Rotation.Rotated90Degree))  # FIXME: seems to sometimes build it with different rotation
     build_cloth_production_group(city, (186, 161))
     build_road((196, 162), (194, 153))
     when_can_build_chapel(city, lambda: build_chapel((203, 155)))
+    when_can_build_fishers_hut(city, lambda: build_fishers_hut((217, 148)))
+    build_road((216, 148), (213, 148))
     # build(the_ultimate_city, (217, 151))
     exit()
 

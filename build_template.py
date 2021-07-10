@@ -12,9 +12,9 @@ class BuildTemplate:
 
 class Rotation(IntEnum):
     Default = 0
-    Rotated90Degree = 90
-    Rotated180Degree = 180
-    Rotated270Degree = 270
+    Rotated90Degree = 1
+    Rotated180Degree = 2
+    Rotated270Degree = 3
 
 
 class Placement:
