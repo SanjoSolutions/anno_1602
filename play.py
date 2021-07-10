@@ -330,7 +330,7 @@ def select_warehouse_from_ship():
 def select_building(placement):
     select_construction_mode()
     type = placement.type
-    if type == Building.Road:
+    if type == Building.DirtRoad:
         select_streets_and_bridges()
         select_road()
     elif type == Building.ForestersHut:
