@@ -14,14 +14,14 @@ def parse(file_path):
             plus_number_regexp = re.compile(r'^\+(\d+)$')
             match = plus_number_regexp.match(string)
             if match:
-                attribute_name = attribute_name
                 attribute_name_without_at = attribute_name[1:] if attribute_name[0] == '@' else attribute_name
+                previous_object = objects[-1][-2]
                 if attribute_name_without_at in constants:
                     base_value = constants[attribute_name_without_at]
-                elif attribute_name[0] == '@' and attribute_name in at_attribute_values:
-                    base_value = at_attribute_values[attribute_name]
-                else:
-                    base_value = objects[-1][-2][attribute_name_without_at]
+                elif attribute_name in previous_object:
+                    base_value = previous_object[attribute_name]
+                elif attribute_name_without_at in previous_object:
+                    base_value = previous_object[attribute_name_without_at]
                 number = int(match.group(1))
                 base_value_type = type(base_value)
                 if base_value_type is int:
@@ -117,7 +117,7 @@ def parse(file_path):
                             if operand_a[0] == '@':
                                 at_attribute_values[operand_a] = value
 
-                            if operand_a in {'Nummer', '@Nummer'}:
+                            if operand_a in {'Id', '@Id'}:
                                 print(value)
 
             line = file.readline()
