@@ -48,7 +48,6 @@ class Anno1602:
         pyautogui.mouseDown()
         pyautogui.moveTo(drag_to_position[0], drag_to_position[1])
         pyautogui.mouseUp()
-        pyautogui.mouseUp()
 
     def get_window_client_area_position(self):
         left, top, right, bottom = GetClientRect(self.window)
