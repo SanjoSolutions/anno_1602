@@ -10,7 +10,7 @@ from other.Good import Good
 from other.build_template import the_ultimate_city, Placement, Rotation
 from other.calculate_resource_yield import determine_building_cost
 from other.Building import Building
-from other.main import read_ships, ShipMovingStatus, read_cities
+from other.main import read_ships, ShipMovingStatus, read_cities, read_island_fields, read_islands
 from other.rates import create_rates, good_names
 
 
@@ -904,6 +904,49 @@ def build_chapel(position):
     place_building(Placement(Building.Chapel, position))
 
 
+def when_a_house_has_upgraded_to_settlers(city, fn):
+    do_when_condition_is_fulfilled(lambda: has_a_house_upgraded_to_settlers(city), fn)
+
+
+def has_a_house_upgraded_to_settlers(city):
+    cities = read_cities(process)
+    city = cities[city]
+    return city.number_of_settlers >= 1
+
+
+def increase_taxes_for_settlers(island_index):
+    island = retrieve_island(island_index)
+    select_a_settler_house(island)
+    increase_taxes_one_step()
+
+
+def retrieve_island(island_index):
+    islands = read_islands(process)
+    island = islands[island_index]
+    return island
+
+
+def select_a_settler_house(island):
+    settler_house_island_position = find_settler_house(island)
+    if settler_house_island_position:
+        settler_house_position = (
+            island.x + settler_house_island_position[0],
+            island.y + settler_house_island_position[1]
+        )
+        click_at_map_position(settler_house_position)
+    else:
+        raise Exception('0 settler houses have been found.')
+
+
+def find_settler_house(island):
+    fields = read_island_fields(process, island)
+    for row in range(len(fields)):
+        for column in range(len(fields[0])):
+            if fields[row][column] in {20621, 20622, 20623, 20624, 20625}:
+                return (column, row)
+    return None
+
+
 def build(build_template, position):
     for placement in build_template.placements:
         x = position[0] + placement.position[0]
@@ -921,70 +964,72 @@ def main():
 
     speed_up_8x()
 
-    ship = 0
-    ship_destination = (217, 162)
-    move_ship(ship, ship_destination)
-    warehouse_position = (213, 160)
-    wait_for_ship_has_arrived(ship)
-    explore_the_island(ship)
-    build_warehouse_from_ship(ship, warehouse_position)
-    move_all_goods_from_ship_to_warehouse(ship)
-    build_road((212, 162), (197, 162))
-    foresters_hut_position = (207, 166)
-    build_foresters_hut(foresters_hut_position)
-    build_road((208, 165), (208, 163))
-    build_forest_around_foresters_hut(foresters_hut_position)
-    foresters_hut_position = (199, 166)
-    build_foresters_hut(foresters_hut_position)
-    build_road((200, 165), (200, 163))
-    build_forest_around_foresters_hut(foresters_hut_position)
-    build_road((212, 161), (212, 148))
+    # ship = 0
+    # ship_destination = (217, 162)
+    # move_ship(ship, ship_destination)
+    # warehouse_position = (213, 160)
+    # wait_for_ship_has_arrived(ship)
+    # explore_the_island(ship)
+    # build_warehouse_from_ship(ship, warehouse_position)
+    # move_all_goods_from_ship_to_warehouse(ship)
+    # build_road((212, 162), (197, 162))
+    # foresters_hut_position = (207, 166)
+    # build_foresters_hut(foresters_hut_position)
+    # build_road((208, 165), (208, 163))
+    # build_forest_around_foresters_hut(foresters_hut_position)
+    # foresters_hut_position = (199, 166)
+    # build_foresters_hut(foresters_hut_position)
+    # build_road((200, 165), (200, 163))
+    # build_forest_around_foresters_hut(foresters_hut_position)
+    # build_road((212, 161), (212, 148))
     city = 0
-    house_positions = (
-        (210, 160),
-        (208, 160),
-        (206, 160),
-        (210, 158),
-        (208, 158),
-        (206, 158),
-        (210, 155),
-        (208, 155),
-        (206, 155),
-        (210, 153),
-        (208, 153),
-        (206, 153),
-        (203, 160),
-        (203, 158),
-        (201, 160),
-        (201, 158),
-        (199, 158)
-    )
-    for index in range(len(house_positions)):
-        house_position = house_positions[index]
-        when_can_build_house(city, lambda: build_house(house_position))
-        if index == 0:
-            increase_taxes_to_maximum(house_position)
-    when_can_build_fishers_hut(city, lambda: build_fishers_hut((215, 159)))
-    build_road((214, 159), (213, 159))
-    warehouse_cost = create_rates({'tools': 3, 'wood': 6})
-
-    def settle_second_island():
-        load_resources_into_ship(ship, warehouse_cost)
-        move_ship(ship, (248, 159))
-        when_ship_has_arrived(ship, build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought)
-
-    def build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought():
-        build_warehouse_from_ship(ship, (251, 156))
-        move_ship(ship, (217, 162))
-        set_tools_to_be_bought()
-
-    when_resources_available(city, warehouse_cost, settle_second_island)
-    when_can_build_market_place(city, lambda: build_market_place((195, 158), Rotation.Rotated90Degree))  # FIXME: seems to sometimes build it with different rotation
-    build_cloth_production_group(city, (186, 161))
-    build_road((196, 162), (194, 153))
-    when_can_build_chapel(city, lambda: build_chapel((203, 155)))
-    when_can_build_fishers_hut(city, lambda: build_fishers_hut((217, 148)))
-    build_road((216, 148), (213, 148))
+    # house_positions = (
+    #     (210, 160),
+    #     (208, 160),
+    #     (206, 160),
+    #     (210, 158),
+    #     (208, 158),
+    #     (206, 158),
+    #     (210, 155),
+    #     (208, 155),
+    #     (206, 155),
+    #     (210, 153),
+    #     (208, 153),
+    #     (206, 153),
+    #     (203, 160),
+    #     (203, 158),
+    #     (201, 160),
+    #     (201, 158),
+    #     (199, 158)
+    # )
+    # for index in range(len(house_positions)):
+    #     house_position = house_positions[index]
+    #     when_can_build_house(city, lambda: build_house(house_position))
+    #     if index == 0:
+    #         increase_taxes_to_maximum(house_position)
+    # when_can_build_fishers_hut(city, lambda: build_fishers_hut((215, 159)))
+    # build_road((214, 159), (213, 159))
+    # warehouse_cost = create_rates({'tools': 3, 'wood': 6})
+    #
+    # def settle_second_island():
+    #     load_resources_into_ship(ship, warehouse_cost)
+    #     move_ship(ship, (248, 159))
+    #     when_ship_has_arrived(ship, build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought)
+    #
+    # def build_second_warehouse_and_move_ship_back_and_set_tools_to_be_bought():
+    #     build_warehouse_from_ship(ship, (251, 156))
+    #     move_ship(ship, (217, 162))
+    #     set_tools_to_be_bought()
+    #
+    # when_resources_available(city, warehouse_cost, settle_second_island)
+    # when_can_build_market_place(city, lambda: build_market_place((195, 158), Rotation.Rotated90Degree))  # FIXME: seems to sometimes build it with different rotation
+    # build_cloth_production_group(city, (186, 161))
+    # build_road((196, 162), (194, 153))
+    # when_can_build_chapel(city, lambda: build_chapel((203, 155)))
+    # when_can_build_fishers_hut(city, lambda: build_fishers_hut((217, 148)))
+    # build_road((216, 148), (213, 148))
+    island = 0
+    when_a_house_has_upgraded_to_settlers(city, lambda: increase_taxes_for_settlers(island))
     # build(the_ultimate_city, (217, 151))
     exit()
 

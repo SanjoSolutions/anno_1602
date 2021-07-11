@@ -93,6 +93,7 @@ class City(StructureWithReadBytes):
         ('supplies', Supply * NUMBER_OF_SUPPLY_TYPES),
         ('_spacer_2_', c_byte * 0xCA),
         ('number_of_pioneers', c_uint32),  # 0x220
+        ('number_of_settlers', c_uint32),  # 0x224
         ('stop_supplying_materials_to_the_settlers', c_bool)  # 0x257
     ]
 
