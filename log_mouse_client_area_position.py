@@ -1,10 +1,12 @@
 import pyautogui
 import time
 
-from other.play import get_window_client_area_position
+from other.main import Anno1602
+
+anno1602 = Anno1602()
 
 while True:
-    left, top = get_window_client_area_position()
+    left, top = anno1602.get_window_client_area_position()
     mouse_position = pyautogui.position()
     position = (
         mouse_position[0] - left,

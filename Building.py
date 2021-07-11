@@ -67,7 +67,11 @@ class Building(IntEnum):
     SpicePlantation = 409
     CattleFarm = 410
     SheepFarm = 411
-    House = 413  # There seems to be 7 different IDs for "Wohnhäuser I (Random 7 Stück)". One for each skin.
+    HousePioneers = 413  # There seems to be 7 different IDs for "Wohnhäuser I (Random 7 Stück)". One for each skin.
+    HouseSettlers = 420
+    HouseCitizens = 425
+    HouseMerchants = 431
+    HouseAristocrats = 436
     Cathedral = 461
     Chapel = 462
     Church = 463
@@ -81,3 +85,5 @@ class Building(IntEnum):
     FireBrigade = 472
     Palace = 473
     Gallows = 474
+    Monument = 475
+    TriumphalArch = 476
